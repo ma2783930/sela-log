@@ -5,7 +5,6 @@ namespace Sela\Middleware;
 use Carbon\Carbon;
 use Closure;
 use Exception;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
@@ -31,6 +30,8 @@ class SelaLogHandler
         try {
             if (!empty($route = $request->route())) {
 
+                $loggedTags = [];
+
                 if (
                     !empty($route->getName()) &&
                     !empty($config = $this->getRouteSelaConfig($route->getName()))
@@ -44,17 +45,22 @@ class SelaLogHandler
                         'timestamp'   => Carbon::now()->toISOString(true)
                     ]);
 
-                    collect($config['data_tags'])
-                        ->filter(fn($dataTag) => !isset($dataTag['log_mime']))
-                        ->each(function ($dataTag) use ($request, $actionLog) {
-                            $this->saveDetailLog($actionLog, $dataTag['name'], $request);
-                        });
-
-                    collect($config['data_tags'])
-                        ->filter(fn($dataTag) => isset($dataTag['log_mime']) && $dataTag['log_mime'])
-                        ->each(function ($dataTag) use ($request, $actionLog) {
-                            $this->saveDetailLog($actionLog, $dataTag['name'], $request, true);
-                        });
+                    $dataTags = collect($config['data_tags']);
+                    $data     = $request->all();
+                    foreach ($data as $inputName => $inputValue) {
+                        $tag = $dataTags->where('name', $inputName)->first();
+                        if (!empty($tag) && !in_array($tag['name'], $loggedTags) && !empty($inputValue)) {
+                            $this->saveDetailLog($actionLog, $tag['name'], $request, isset($tag['log_mime']));
+                            $loggedTags[] = $tag['name'];
+                        }
+                    }
+                    foreach ($route->parameters as $paramName => $modelInstance) {
+                        $tag = $dataTags->whereIn('name', ["{$paramName}_id", "id"])->first();
+                        if (!empty($tag) && !in_array($tag['name'], $loggedTags)) {
+                            $this->saveDetailLog($actionLog, $tag['name'], $request, isset($tag['log_mime']));
+                            $loggedTags[] = $tag['name'];
+                        }
+                    }
 
                 }
             }
@@ -64,30 +70,18 @@ class SelaLogHandler
         return $next($request);
     }
 
-    /**
-     * @param                          $tagName
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\UploadedFile|string|null
-     */
-    public function getDataTagValue($tagName, Request $request): string|UploadedFile|null
+
+    public function getDataTagValue($tagName, Request $request)
     {
-        if (!empty($value = $request->input($tagName))) {
-            return (string)$value;
+        $data = $request->all();
+        foreach ($data as $inputName => $inputValue) {
+            if ($tagName == $inputName) {
+                return $inputValue;
+            }
         }
-
-        foreach ($request->route()->parameters as $paramName => $paramValue) {
-            if ($tagName == "{$paramName}_id") {
-                if (is_string($paramValue)) {
-                    return $paramValue;
-                }
-
-                if ($paramValue instanceof Model) {
-                    return (string)$paramValue->getKey();
-                }
-
-                if ($paramValue instanceof UploadedFile) {
-                    return $paramValue;
-                }
+        foreach ($request->route()->parameters as $paramName => $modelInstance) {
+            if (in_array($tagName, ["{$paramName}_id", "id"])) {
+                return $modelInstance;
             }
         }
 
@@ -124,7 +118,7 @@ class SelaLogHandler
     public function saveDetailLog(SelaActionLog $actionLog, $tagName, Request $request, bool $logMime = false): void
     {
         $tagValue = $this->getDataTagValue($tagName, $request);
-        if ($logMime) {
+        if (!$logMime) {
 
             $actionLog->selaDetailLogs()->create([
                 'id'       => Str::uuid(),
@@ -147,12 +141,14 @@ class SelaLogHandler
                     }
 
                     $fileName = sprintf('%s_%s', time(), $tagValue->getClientOriginalName());
+                    $mimeType = $tagValue->getMimeType();
                     FileFacade::copy($tagValue->path(), sprintf('%s/%s', $filePath, $fileName));
 
                 } else {
 
                     $file     = $this->convertBase64ToFile($tagValue);
                     $fileName = sprintf('%s.%s', time(), $file->extension());
+                    $mimeType = $file->getMimeType();
                     $file->move($filePath, $fileName);
 
                 }
@@ -167,7 +163,8 @@ class SelaLogHandler
                 $actionLog->selaMimeLogs()->create([
                     'id'       => Str::uuid(),
                     'data_tag' => $tagName,
-                    'value'    => $logValue
+                    'value'    => $logValue,
+                    'mime'     => $mimeType
                 ]);
 
             } catch (Exception $exception) {
@@ -190,14 +187,12 @@ class SelaLogHandler
 
             }
 
-
         }
     }
 
     /**
      * @param string $value
      * @return \Illuminate\Http\UploadedFile
-     * @noinspection PhpUndefinedFunctionInspection
      */
     public function convertBase64ToFile(string $value): UploadedFile
     {
