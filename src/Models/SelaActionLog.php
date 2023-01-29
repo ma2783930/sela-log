@@ -7,10 +7,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class SelaActionLog extends Model
 {
-    protected $table      = 'sela_action_logs';
-    public    $timestamps = false;
-    protected $guarded    = [];
-    protected $casts      = [];
+    protected $table        = 'sela_action_logs';
+    public    $incrementing = false;
+    public    $keyType      = 'string';
+    public    $timestamps   = false;
+    protected $guarded      = [];
+    protected $casts        = [];
 
     public function selaDetailLogs(): HasMany
     {

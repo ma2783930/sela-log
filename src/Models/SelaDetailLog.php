@@ -6,8 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class SelaDetailLog extends Model
 {
-    protected $table      = 'sela_detail_logs';
-    public    $timestamps = false;
-    protected $guarded    = [];
-    protected $casts      = [];
+    protected $table        = 'sela_detail_logs';
+    public    $incrementing = false;
+    public    $keyType      = 'string';
+    public    $timestamps   = false;
+    protected $guarded      = [];
+    protected $casts        = [];
 }
