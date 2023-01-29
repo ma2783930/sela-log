@@ -5,6 +5,7 @@ namespace Sela\Middleware;
 use Carbon\Carbon;
 use Closure;
 use Exception;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
@@ -23,7 +24,6 @@ class SelaLogHandler
      * @param \Closure(\Illuminate\Http\Request): (\Illuminate\Http\Response|\Illuminate\Http\RedirectResponse) $next
      * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
      * @noinspection PhpUndefinedFieldInspection
-     * @noinspection PhpUndefinedMethodInspection
      */
     public function handle(Request $request, Closure $next)
     {
@@ -36,7 +36,6 @@ class SelaLogHandler
                     !empty($route->getName()) &&
                     !empty($config = $this->getRouteSelaConfig($route->getName()))
                 ) {
-                    /** @var $actionLog SelaActionLog */
                     $actionLog = SelaActionLog::forceCreate([
                         'parent_proc' => null,
                         'process_tag' => $config['process_tag'],
@@ -81,7 +80,7 @@ class SelaLogHandler
         }
         foreach ($request->route()->parameters as $paramName => $modelInstance) {
             if (in_array($tagName, ["{$paramName}_id", "id"])) {
-                return $modelInstance;
+                return $modelInstance instanceof Model ? $modelInstance->getKey() : $modelInstance;
             }
         }
 
@@ -128,9 +127,8 @@ class SelaLogHandler
 
         } else {
 
-            $date          = verta();
-            $filePath      = sprintf('/log/sela/files/%s/%s/%s', $date->year, $date->month, $date->day);
-            $filePathInLog = sprintf('./files/%s/%s/%s', $date->year, $date->month, $date->day);
+            $filePath      = storage_path('/logs/sela/files');
+            $filePathInLog = './files';
 
             try {
 

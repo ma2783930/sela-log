@@ -33,6 +33,7 @@
         "illuminate/routing": "^7|^8|^9",
         "illuminate/translation": "^7|^8|^9",
         "illuminate/collections": "^7|^8|^9",
-        "hekmatinasser/verta": "^2.1"
+        "illuminate/queue": "^7|^8|^9",
+        "laravel/framework": "^7|^8|^9"
     }
 }
