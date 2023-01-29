@@ -1,0 +1,38 @@
+{
+    "name": "ma2783930/sela-sso",
+    "description": "SELA SSO package",
+    "type": "library",
+    "homepage": "https://github.com/ma2783930/sela-sso",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Sela\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Sela\\Providers\\SelaLogServiceProvider"
+            ]
+        }
+    },
+    "authors": [
+        {
+            "name": "m.alizadeh",
+            "email": "majid.alizadeh22@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php": "^8.0.2",
+        "illuminate/support": "^7|^8|^9",
+        "illuminate/database": "^7|^8|^9",
+        "illuminate/http": "^7|^8|^9",
+        "illuminate/config": "^7|^8|^9",
+        "illuminate/filesystem": "^7|^8|^9",
+        "illuminate/routing": "^7|^8|^9",
+        "illuminate/translation": "^7|^8|^9",
+        "illuminate/collections": "^7|^8|^9",
+        "hekmatinasser/verta": "^2.1"
+    }
+}
