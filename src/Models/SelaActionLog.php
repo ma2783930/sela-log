@@ -4,10 +4,10 @@ namespace Sela\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Sela\Models\SelaDetailLog;
 
 class SelaActionLog extends Model
 {
+    protected $table = 'sela_action_logs';
     protected $guarded = [];
     protected $casts   = [];
 

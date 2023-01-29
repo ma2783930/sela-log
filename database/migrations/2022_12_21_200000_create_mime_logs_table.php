@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('mime_logs', function (Blueprint $table) {
+        Schema::create('sela_mime_logs', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('actionlog_id')->references('id')->on('sela_action_logs')->cascadeOnUpdate()->cascadeOnUpdate();
             $table->string('data_tag', 30);
@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('mime_logs');
+        Schema::dropIfExists('sela_mime_logs');
     }
 };
