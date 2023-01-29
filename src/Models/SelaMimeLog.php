@@ -6,7 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class SelaMimeLog extends Model
 {
-    protected $table = 'sela_mime_logs';
-    protected $guarded = [];
-    protected $casts = [];
+    protected $table      = 'sela_mime_logs';
+    public    $timestamps = false;
+    protected $guarded    = [];
+    protected $casts      = [];
 }
