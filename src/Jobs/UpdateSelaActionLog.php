@@ -7,6 +7,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Sela\Models\SelaActionLog;
 
@@ -31,28 +32,33 @@ class UpdateSelaActionLog implements ShouldQueue
      */
     public function handle()
     {
-        $pendingLogs = SelaActionLog::all()
-                                    ->map(fn($log) => json_encode([
-                                        'id'          => $log->id,
-                                        'parent_proc' => $log->parent_proc,
-                                        'timestamp'   => $log->timestamp,
-                                        'process_tag' => $log->process_tag,
-                                        'user_name'   => $log->user_name
-                                    ]))
-                                    ->map(fn($log) => str_replace(',', ', ', $log))
-                                    ->toArray();
+        DB::transaction(function () {
+            $pendingLogs = SelaActionLog::all();
 
-        $filePath = Storage::path('logs/sela/actionlog.json');
-        if (!file_exists($filePath)) {
-            $fileStream = fopen($filePath, 'w');
+            $filePath = storage_path('logs/sela/actionlog.json');
+            if (!file_exists($filePath)) {
+                $fileStream = fopen($filePath, 'w');
+                fclose($fileStream);
+            }
+
+            $fileStream = fopen($filePath, 'a');
+            fwrite($fileStream, implode(
+                    "\n",
+                    $pendingLogs
+                        ->map(fn($log) => json_encode([
+                            'id'          => $log->id,
+                            'parent_proc' => $log->parent_proc,
+                            'timestamp'   => $log->timestamp,
+                            'process_tag' => $log->process_tag,
+                            'user_name'   => $log->user_name
+                        ]))
+                        ->map(fn($log) => str_replace(',', ', ', $log))
+                        ->toArray())
+            );
+            fwrite($fileStream, "\n");
             fclose($fileStream);
-        }
 
-        $fileStream = fopen($filePath, 'a');
-        fwrite($fileStream, implode("\n", $pendingLogs));
-        fwrite($fileStream, "\n");
-        fclose($fileStream);
-
-
+            $pendingLogs->each(fn($log) => $log->delete());
+        });
     }
 }
