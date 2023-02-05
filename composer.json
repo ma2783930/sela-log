@@ -25,15 +25,6 @@
     "minimum-stability": "dev",
     "require": {
         "php": "^8.0.2",
-        "illuminate/support": "^7|^8|^9",
-        "illuminate/database": "^7|^8|^9",
-        "illuminate/http": "^7|^8|^9",
-        "illuminate/config": "^7|^8|^9",
-        "illuminate/filesystem": "^7|^8|^9",
-        "illuminate/routing": "^7|^8|^9",
-        "illuminate/translation": "^7|^8|^9",
-        "illuminate/collections": "^7|^8|^9",
-        "illuminate/queue": "^7|^8|^9",
         "laravel/framework": "^7|^8|^9"
     }
 }
