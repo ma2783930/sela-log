@@ -74,8 +74,8 @@ class UpdateSelaLogFiles implements ShouldQueue
      */
     private function touchFile(string $filePath): void
     {
-        if (!file_exists($filePath)) {
-            $fileStream = fopen($filePath, 'w');
+        if (!file_exists(storage_path($filePath))) {
+            $fileStream = fopen(storage_path($filePath), 'w');
             fclose($fileStream);
         }
     }
@@ -87,7 +87,7 @@ class UpdateSelaLogFiles implements ShouldQueue
      */
     private function appendActionLogsToFile(Collection $actions, string $filePath): void
     {
-        $fileStream = fopen($filePath, 'a');
+        $fileStream = fopen(storage_path($filePath), 'a');
         fwrite($fileStream, implode(
                 "\n",
                 $actions
@@ -112,7 +112,7 @@ class UpdateSelaLogFiles implements ShouldQueue
      */
     private function appendDetailLogsToFile(Collection $details, string $filePath): void
     {
-        $fileStream = fopen($filePath, 'a');
+        $fileStream = fopen(storage_path($filePath), 'a');
         fwrite($fileStream, implode(
                 "\n",
                 $details
@@ -135,7 +135,7 @@ class UpdateSelaLogFiles implements ShouldQueue
      */
     private function appendMimeLogsToFile(Collection $mimes, string $filePath): void
     {
-        $fileStream = fopen($filePath, 'a');
+        $fileStream = fopen(storage_path($filePath), 'a');
         fwrite($fileStream, implode(
                 "\n",
                 $mimes
