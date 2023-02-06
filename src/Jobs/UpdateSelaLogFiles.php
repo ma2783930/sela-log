@@ -43,12 +43,14 @@ class UpdateSelaLogFiles implements ShouldQueue
                             $actions->each(function (ActionLog $action) {
                                 $action->details()
                                        ->orderBy('log_mime')
+                                       ->get()
                                        ->groupBy('file_name')
                                        ->each(function (Collection $details, $filePath) {
                                            $this->touchFile($filePath);
                                            $this->appendDetailLogsToFile($details, $filePath);
                                        });
                                 $action->mimes()
+                                       ->get()
                                        ->groupBy('file_name')
                                        ->each(function (Collection $mimes, $filePath) {
                                            $this->touchFile($filePath);
