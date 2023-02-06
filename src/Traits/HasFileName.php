@@ -10,7 +10,7 @@ trait HasFileName
     {
         static::saving(function ($instance) {
             /** @var $instance self */
-            $instance->file_name = sprintf($instance->fileNameTemplate, Carbon::now()->format('Y_m_d'));
+            $instance->file_name = str_replace('%', Carbon::now()->format('Y_m_d'), $instance->fileNameTemplate);
         });
     }
 }
