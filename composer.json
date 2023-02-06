@@ -1,8 +1,8 @@
 {
-    "name": "ma2783930/sela-sso",
-    "description": "SELA SSO package",
+    "name": "ma2783930/sela-log",
+    "description": "SELA log package",
     "type": "library",
-    "homepage": "https://github.com/ma2783930/sela-sso",
+    "homepage": "https://github.com/ma2783930/sela-log",
     "license": "MIT",
     "autoload": {
         "psr-4": {
