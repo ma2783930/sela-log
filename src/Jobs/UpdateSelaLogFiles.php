@@ -35,7 +35,7 @@ class UpdateSelaLogFiles implements ShouldQueue
     public function handle(): void
     {
         DB::transaction(function () {
-            $actions = tap(ActionLog::oldest()->get(), function (Collection $actions) {
+            $actions = tap(ActionLog::oldest('timestamp')->get(), function (Collection $actions) {
                 $actions->groupBy('file_name')
                         ->each(function (Collection $actions, $filePath) {
                             $this->touchFile($filePath);
@@ -58,7 +58,7 @@ class UpdateSelaLogFiles implements ShouldQueue
                         });
             });
 
-            $actions->each(function ($action) {
+            $actions->each(function (ActionLog $action) {
                 $action->details()->delete();
                 $action->mimes()->delete();
                 $action->delete();
