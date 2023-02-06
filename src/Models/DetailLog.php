@@ -12,6 +12,9 @@ class DetailLog extends BaseModel
     use HasFileName;
     use HasUuid;
 
-    protected $table        = 'sela_detail_logs';
+    protected     $table            = 'sela_detail_logs';
+    protected     $casts            = [
+        'log_mime' => 'boolean'
+    ];
     public string $fileNameTemplate = 'detaillog_%.json';
 }

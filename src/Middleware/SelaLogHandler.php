@@ -120,7 +120,7 @@ class SelaLogHandler
 
             $action->details()->create([
                 'data_tag' => $tag,
-                'value'    => $value
+                'value'    => $value ?? ""
             ]);
 
         } else {
@@ -159,7 +159,8 @@ class SelaLogHandler
 
                 $action->details()->create([
                     'data_tag' => $tag,
-                    'value'    => $logValue
+                    'value'    => $logValue,
+                    'log_mime' => true
                 ]);
 
                 /*
@@ -189,7 +190,8 @@ class SelaLogHandler
 
                 $action->details()->create([
                     'data_tag' => $tag,
-                    'value'    => $path
+                    'value'    => $path,
+                    'log_mime' => true
                 ]);
 
                 $action->mimes()->create([
