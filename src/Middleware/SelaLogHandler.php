@@ -29,7 +29,7 @@ class SelaLogHandler
      * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
      * @noinspection PhpUndefinedFieldInspection
      */
-    public function handle(Request $request, Closure $next): Response|RedirectResponse
+    public function handle(Request $request, Closure $next)
     {
         try {
             if (!empty($route = $request->route())) {
