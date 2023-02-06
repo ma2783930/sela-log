@@ -6,8 +6,11 @@ use Str;
 
 trait HasUuid
 {
-    public $incrementing = false;
-    public $keyType      = 'string';
+    public function initializeHasUuid(): void
+    {
+        $this->setIncrementing(false);
+        $this->setKeyType('string');
+    }
 
     public function bootHasUuid(): void
     {
