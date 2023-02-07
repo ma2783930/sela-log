@@ -12,7 +12,7 @@ trait SelaRouteHelper
      */
     public function getRouteSelaConfig($route_name): ?array
     {
-        foreach (Config::get('sela_log.identifiers') as $section => $configurations) {
+        foreach (Config::get('sela.identifiers') as $section => $configurations) {
             foreach ($configurations as $index => $config) {
                 if ($route_name == $config['route']) {
                     return [

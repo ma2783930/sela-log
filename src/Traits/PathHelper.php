@@ -12,11 +12,11 @@ trait PathHelper
     {
         $basePath = str_replace(
             ['{configPath}', '{path}'],
-            [config('sela_log.path'), $path],
+            [config('sela.path'), $path],
             '{configPath}/{path}'
         );
 
-        if (config('sela_log.use_storage')) {
+        if (config('sela.use_storage')) {
             return storage_path($basePath);
         }
 

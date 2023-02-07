@@ -19,13 +19,12 @@ class SelaLogServiceProvider extends ServiceProvider
      * Bootstrap services.
      *
      * @return void
-     * @noinspection PhpUndefinedFunctionInspection
      */
     public function boot(): void
     {
-        /*$this->mergeConfigFrom(
-            __DIR__ . '/../../config/sso.php', 'sso'
-        );*/
+        $this->mergeConfigFrom(
+            __DIR__ . '/../../config/sela.php', 'sela'
+        );
 
         $this->publishes([
             __DIR__ . '/../../database/migrations' => database_path('migrations'),
