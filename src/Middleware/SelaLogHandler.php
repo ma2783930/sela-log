@@ -4,7 +4,6 @@ namespace Sela\Middleware;
 
 use Closure;
 use Exception;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
@@ -70,14 +69,14 @@ class SelaLogHandler
                     |--------------------------------------------------------------------------
                     */
 
-                    foreach ($route->parameters as $paramName => $modelInstance) {
-                        $tag = $dataTags->whereIn('name', ["{$paramName}_id", "id"])->first();
+                    foreach ($route->originalParameters() as $paramName => $value) {
+                        $tagName = str()->snake($paramName) . '_id';
+                        $tag = $dataTags->where('name', $tagName)->first();
                         if (!empty($tag) && !in_array($tag['name'], $logged)) {
                             $this->saveDetailLog(
                                 $action,
                                 $tag['name'],
-                                $modelInstance instanceof Model ? $modelInstance->getKey() : $modelInstance,
-                                isset($tag['log_mime'])
+                                $value
                             );
                             $logged[] = $tag['name'];
                         }
