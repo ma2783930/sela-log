@@ -10,7 +10,11 @@ trait PathHelper
      */
     public function getFullPath(string $path): string
     {
-        $basePath = sprintf('%/%', config('sela_log.path'), $path);
+        $basePath = str_replace(
+            ['{configPath}', '{path}'],
+            [config('sela_log.path'), $path],
+            '{configPath}/{path}'
+        );
 
         if (config('sela_log.use_storage')) {
             return storage_path($basePath);
