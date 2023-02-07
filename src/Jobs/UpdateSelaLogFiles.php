@@ -12,10 +12,12 @@ use Illuminate\Support\Facades\DB;
 use Sela\Models\ActionLog;
 use Sela\Models\DetailLog;
 use Sela\Models\MimeLog;
+use Sela\Traits\PathHelper;
 
 class UpdateSelaLogFiles implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use PathHelper;
 
     /**
      * Create a new job instance.
@@ -35,7 +37,7 @@ class UpdateSelaLogFiles implements ShouldQueue
     public function handle(): void
     {
         DB::transaction(function () {
-            $actions = tap(ActionLog::oldest('timestamp')->get(), function (Collection $actions) {
+            $actions = tap(ActionLog::oldest('timestamp')->lockForUpdate()->get(), function (Collection $actions) {
                 $actions->groupBy('file_name')
                         ->each(function (Collection $actions, $filePath) {
                             $this->touchFile($filePath);
@@ -74,8 +76,9 @@ class UpdateSelaLogFiles implements ShouldQueue
      */
     private function touchFile(string $filePath): void
     {
-        if (!file_exists(storage_path($filePath))) {
-            $fileStream = fopen(storage_path($filePath), 'w');
+        $path = $this->getFullPath($filePath);
+        if (!file_exists($path)) {
+            $fileStream = fopen($path, 'w');
             fclose($fileStream);
         }
     }
@@ -87,7 +90,7 @@ class UpdateSelaLogFiles implements ShouldQueue
      */
     private function appendActionLogsToFile(Collection $actions, string $filePath): void
     {
-        $fileStream = fopen(storage_path($filePath), 'a');
+        $fileStream = fopen($this->getFullPath($filePath), 'a');
         fwrite($fileStream, implode(
                 "\n",
                 $actions
@@ -112,7 +115,7 @@ class UpdateSelaLogFiles implements ShouldQueue
      */
     private function appendDetailLogsToFile(Collection $details, string $filePath): void
     {
-        $fileStream = fopen(storage_path($filePath), 'a');
+        $fileStream = fopen($this->getFullPath($filePath), 'a');
         fwrite($fileStream, implode(
                 "\n",
                 $details
@@ -135,7 +138,7 @@ class UpdateSelaLogFiles implements ShouldQueue
      */
     private function appendMimeLogsToFile(Collection $mimes, string $filePath): void
     {
-        $fileStream = fopen(storage_path($filePath), 'a');
+        $fileStream = fopen($this->getFullPath($filePath), 'a');
         fwrite($fileStream, implode(
                 "\n",
                 $mimes
