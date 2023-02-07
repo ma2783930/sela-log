@@ -4,12 +4,18 @@ namespace Sela\Traits;
 
 trait PathHelper
 {
-    public function getFullPath($path)
+    /**
+     * @param string $path
+     * @return string
+     */
+    public function getFullPath(string $path): string
     {
+        $basePath = sprintf('%/%', config('sela_log.path'), $path);
+
         if (config('sela_log.use_storage')) {
-            return storage_path($path);
+            return storage_path($basePath);
         }
 
-        return $path;
+        return $basePath;
     }
 }
