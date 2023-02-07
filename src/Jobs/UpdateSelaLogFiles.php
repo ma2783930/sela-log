@@ -19,6 +19,8 @@ class UpdateSelaLogFiles implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
     use PathHelper;
 
+    private int $encodeFlags = JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE;
+
     /**
      * Create a new job instance.
      *
@@ -100,8 +102,8 @@ class UpdateSelaLogFiles implements ShouldQueue
                         'id'          => $log->id,
                         'user_name'   => $log->user_name,
                         'timestamp'   => $log->timestamp,
-                    ]))
-                    ->map(fn($log) => str_replace([',', '\\'], [', ', ''], $log))
+                    ], $this->encodeFlags))
+                    ->map(fn($log) => str_replace(',', ', ', $log))
                     ->toArray())
         );
         fwrite($fileStream, "\n");
@@ -123,8 +125,8 @@ class UpdateSelaLogFiles implements ShouldQueue
                         'actionlog_id' => $log->actionlog_id,
                         'data_tag'     => $log->data_tag,
                         'value'        => $log->value
-                    ]))
-                    ->map(fn($log) => str_replace([',', '\\'], [', ', ''], $log))
+                    ], $this->encodeFlags))
+                    ->map(fn($log) => str_replace(',', ', ', $log))
                     ->toArray())
         );
         fwrite($fileStream, "\n");
@@ -147,8 +149,8 @@ class UpdateSelaLogFiles implements ShouldQueue
                         'data_tag'     => $log->data_tag,
                         'value'        => $log->value,
                         'mime'         => $log->mime
-                    ]))
-                    ->map(fn($log) => str_replace([',', '\\'], [', ', ''], $log))
+                    ], $this->encodeFlags))
+                    ->map(fn($log) => str_replace(',', ', ', $log))
                     ->toArray())
         );
         fwrite($fileStream, "\n");
