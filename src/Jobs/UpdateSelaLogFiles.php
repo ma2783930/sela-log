@@ -101,7 +101,7 @@ class UpdateSelaLogFiles implements ShouldQueue
                         'user_name'   => $log->user_name,
                         'timestamp'   => $log->timestamp,
                     ]))
-                    ->map(fn($log) => str_replace(',', ', ', $log))
+                    ->map(fn($log) => str_replace([',', '\\'], [', ', ''], $log))
                     ->toArray())
         );
         fwrite($fileStream, "\n");
@@ -124,7 +124,7 @@ class UpdateSelaLogFiles implements ShouldQueue
                         'data_tag'     => $log->data_tag,
                         'value'        => $log->value
                     ]))
-                    ->map(fn($log) => str_replace(',', ', ', $log))
+                    ->map(fn($log) => str_replace([',', '\\'], [', ', ''], $log))
                     ->toArray())
         );
         fwrite($fileStream, "\n");
@@ -148,7 +148,7 @@ class UpdateSelaLogFiles implements ShouldQueue
                         'value'        => $log->value,
                         'mime'         => $log->mime
                     ]))
-                    ->map(fn($log) => str_replace(',', ', ', $log))
+                    ->map(fn($log) => str_replace([',', '\\'], [', ', ''], $log))
                     ->toArray())
         );
         fwrite($fileStream, "\n");
