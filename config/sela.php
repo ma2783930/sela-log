@@ -2,9 +2,6 @@
 
 return [
     'path'                => 'logs/sela',
-    'use_storage'         => true,
-    'logconfig_file_name' => 'logconfig.json',
-    'actionlog_file_name' => 'actionlog.json',
-    'detaillog_file_name' => 'detaillog.json',
-    'identifiers'         => []
+    'path_date_format'    => 'Y_m_d_H',
+    'use_storage'         => true
 ];

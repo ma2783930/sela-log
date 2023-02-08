@@ -48,32 +48,32 @@ trait HasDatabaseLog
 
         } else {
 
-            $date = verta()->format('Y_m_d');
-            $filePath      = storage_path('/logs/sela/files/' . $date);
-            $filePathInLog = './files/' . $date;
+            $dateFormat            = config('sela.path_date_format', 'Y_m_d');
+            $directoryPath         = storage_path(config('sela.path') . '/files/' . $dateFormat);
+            $relativeDirectoryPath = './files/' . $dateFormat;
 
             try {
 
                 if ($value instanceof UploadedFile) {
 
-                    if (!file_exists($filePath)) {
-                        mkdir($filePath, '0775', true);
+                    if (!file_exists($directoryPath)) {
+                        mkdir($directoryPath, '0775', true);
                     }
 
                     $fileName = Str::uuid() . '.' . $value->guessExtension();
                     $mimeType = $value->getMimeType();
-                    FileFacade::copy($value->path(), sprintf('%s/%s', $filePath, $fileName));
+                    FileFacade::copy($value->path(), sprintf('%s/%s', $directoryPath, $fileName));
 
                 } else {
 
                     $file     = base64_to_file($value);
                     $fileName = sprintf('%s.%s', time(), $file->extension());
                     $mimeType = $file->getMimeType();
-                    $file->move($filePath, $fileName);
+                    $file->move($directoryPath, $fileName);
 
                 }
 
-                $logValue = sprintf('%s/%s', $filePathInLog, $fileName);
+                $logValue = sprintf('%s/%s', $relativeDirectoryPath, $fileName);
 
                 /*
                 |--------------------------------------------------------------------------
@@ -108,9 +108,9 @@ trait HasDatabaseLog
                 */
 
                 $fileName = time() . '.' . '.tmp';
-                file_put_contents(sprintf('%s/%s', $filePath, $fileName), $value);
+                file_put_contents(sprintf('%s/%s', $directoryPath, $fileName), $value);
 
-                $path = sprintf('%s/%s', $filePathInLog, $fileName);
+                $path = sprintf('%s/%s', $relativeDirectoryPath, $fileName);
 
                 $action->details()->create([
                     'data_tag' => $tag,

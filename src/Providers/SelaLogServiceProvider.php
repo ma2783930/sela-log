@@ -31,7 +31,7 @@ class SelaLogServiceProvider extends ServiceProvider
             GenerateSelaConfig::class
         ]);
 
-        $this->mergeConfigFrom(__DIR__ . '/../../config/sela.php', 'config');
+        $this->mergeConfigFrom(__DIR__ . '/../../config/sela.php', 'sela');
 
         $this->publishes([
             __DIR__ . '/../../database/migrations' => database_path('migrations'),

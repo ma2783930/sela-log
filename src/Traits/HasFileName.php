@@ -8,7 +8,8 @@ trait HasFileName
     {
         static::saving(function ($instance) {
             /** @var $instance self */
-            $instance->file_name = str_replace('%', verta()->format('Y_m_d'), $instance->fileNameTemplate);
+            $dateFormat = config('sela.path_date_format', 'Y_m_d');
+            $instance->file_name = str_replace('%', verta()->format($dateFormat), $instance->fileNameTemplate);
         });
     }
 }
