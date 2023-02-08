@@ -36,7 +36,7 @@ class SelaLogServiceProvider extends ServiceProvider
         $path                                   = config('sela.path');
         app()->config['filesystems.disks.sela'] = [
             'driver' => 'local',
-            'root'   => $useStorage ? storage_path($path) : 'file///' . $path
+            'root'   => $useStorage ? storage_path($path) : $path
         ];
     }
 }
