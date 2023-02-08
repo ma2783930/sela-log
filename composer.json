@@ -22,9 +22,14 @@
             "email": "majid.alizadeh22@gmail.com"
         }
     ],
+    "repositories": [
+        {"type": "composer", "url": "https://ma2783930.repo.repman.io"}
+    ],
     "minimum-stability": "dev",
     "require": {
         "php": "^8.0.2",
-        "laravel/framework": "^7|^8|^9"
+        "laravel/framework": "^7|^8|^9",
+        "ext-mbstring": "*",
+        "ma2783930/helpers": "dev-master"
     }
 }
