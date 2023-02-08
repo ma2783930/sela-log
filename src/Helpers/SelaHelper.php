@@ -22,7 +22,7 @@ class SelaHelper
 
     public function insertLog(Request $request, $processName, $dataTags = []): void
     {
-        $action = $this->insertActionLog($processName);
+        /*$action = $this->insertActionLog($processName);
 
         foreach ($dataTags as $data_tag) {
             if ($request->has($data_tag['name'])) {
@@ -30,6 +30,6 @@ class SelaHelper
             } else if (!empty($value = $request->route()->originalParameter(str($data_tag['name'])->rtrim('_id')->camel()->toString()))) {
                 $this->insertDetailLog($action, $data_tag['name'], $value);
             }
-        }
+        }*/
     }
 }

@@ -13,7 +13,10 @@
         "laravel": {
             "providers": [
                 "Sela\\Providers\\SelaLogServiceProvider"
-            ]
+            ],
+            "aliases": {
+                "Sela": "Sela\\Facades\\Sela"
+            }
         }
     },
     "authors": [
