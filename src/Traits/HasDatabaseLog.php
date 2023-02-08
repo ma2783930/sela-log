@@ -11,8 +11,6 @@ use Str;
 
 trait HasDatabaseLog
 {
-    use Base64Helper;
-
     /**
      * @param string $processName
      * @return \Sela\Models\ActionLog
@@ -50,8 +48,9 @@ trait HasDatabaseLog
 
         } else {
 
-            $filePath      = storage_path('/logs/sela/files');
-            $filePathInLog = './files';
+            $date = verta()->format('Y_m_d');
+            $filePath      = storage_path('/logs/sela/files/' . $date);
+            $filePathInLog = './files/' . $date;
 
             try {
 
@@ -67,7 +66,7 @@ trait HasDatabaseLog
 
                 } else {
 
-                    $file     = $this->convertBase64ToFile($value);
+                    $file     = base64_to_file($value);
                     $fileName = sprintf('%s.%s', time(), $file->extension());
                     $mimeType = $file->getMimeType();
                     $file->move($filePath, $fileName);

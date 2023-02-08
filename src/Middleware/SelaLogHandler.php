@@ -8,12 +8,10 @@ use Exception;
 use Illuminate\Http\Request;
 use Sela\Jobs\UpdateSelaLogFiles;
 use Sela\Traits\AttributeReader;
-use Sela\Traits\Base64Helper;
 use Sela\Traits\HasDatabaseLog;
 
 class SelaLogHandler
 {
-    use Base64Helper;
     use HasDatabaseLog;
     use AttributeReader;
 
