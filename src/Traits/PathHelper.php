@@ -2,6 +2,8 @@
 
 namespace Sela\Traits;
 
+use Storage;
+
 trait PathHelper
 {
     /**
@@ -16,10 +18,6 @@ trait PathHelper
             '{configPath}/{path}'
         );
 
-        if (config('sela.use_storage')) {
-            return storage_path($basePath);
-        }
-
-        return $basePath;
+        return Storage::disk('sela')->path($basePath);
     }
 }
