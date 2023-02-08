@@ -3,6 +3,8 @@
 namespace Sela\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Sela\Console\Commands\GenerateSelaConfig;
+
 class SelaLogServiceProvider extends ServiceProvider
 {
     /**
@@ -22,13 +24,16 @@ class SelaLogServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $this->mergeConfigFrom(
-            __DIR__ . '/../../config/sela.php', 'sela'
-        );
+        $this->commands([
+            GenerateSelaConfig::class
+        ]);
+
+        $this->mergeConfigFrom(__DIR__ . '/../../config/sela.php', 'config');
 
         $this->publishes([
             __DIR__ . '/../../database/migrations' => database_path('migrations'),
-        ], 'sela-log');
+            __DIR__ . '/../../config/sela.php'     => config_path('sela.php')
+        ], 'sela');
 
         $this->loadMigrationsFrom(__DIR__ . '/../../database/migrations');
     }

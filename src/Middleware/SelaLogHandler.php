@@ -3,11 +3,14 @@
 namespace Sela\Middleware;
 
 use Closure;
+use DB;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File as FileFacade;
+use ReflectionClass;
+use Sela\Attributes\SelaProcess;
 use Sela\Jobs\UpdateSelaLogFiles;
 use Sela\Models\ActionLog;
 use Sela\Traits\Base64Helper;
@@ -29,72 +32,39 @@ class SelaLogHandler
     public function handle(Request $request, Closure $next)
     {
         try {
-            if (!empty($route = $request->route())) {
-                if (
-                    !empty($route->getName()) &&
-                    !empty($config = $this->getRouteSelaConfig($route->getName()))
-                ) {
+            $method     = $request->route()->getActionMethod();
+            $controller = get_class($request->route()->controller);
+            $reflection = new ReflectionClass($controller);
+            $method     = $reflection->getMethod($method);
+            $attribute  = $method->getAttributes(SelaProcess::class);
+            if (!empty($attribute)) {
+                /** @var $attributeClass SelaProcess */
+                $attributeClass = $attribute[0]->newInstance();
 
-                    $logged = [];
+                DB::transaction(function () use ($request, $attributeClass) {
+
                     $action = ActionLog::forceCreate([
-                        'process_tag' => $config['process_tag'],
+                        'process_tag' => $attributeClass->process_name,
                         'user_name'   => Auth::user() ? Auth::user()->username : 'guest',
                     ]);
 
-                    $dataTags = collect($config['data_tags']);
-                    $data     = $request->all();
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | Log inputs from request body
-                    |--------------------------------------------------------------------------
-                    */
-
-                    foreach ($data as $name => $value) {
-                        $tag = $dataTags->where('name', $name)->first();
-                        if (!empty($tag) && !in_array($tag['name'], $logged)) {
-                            $this->saveDetailLog(
-                                $action,
-                                $tag['name'],
-                                $value,
-                                isset($tag['log_mime']) && !empty($tag['log_mime'])
-                            );
-                            $logged[] = $tag['name'];
+                    foreach ($attributeClass->data_tags as $data_tag) {
+                        if ($request->has($data_tag['name'])) {
+                            $this->saveDetailLog($action, $data_tag['name'], $request->{$data_tag}, $data_tag['log_mime'] ?? false);
+                        } else if (!empty($value = $request->route()->originalParameter("{$data_tag['name']}_id"))) {
+                            $this->saveDetailLog($action, $data_tag['name'], $value, $data_tag['log_mime'] ?? false);
                         }
                     }
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | Log inputs from request parameters (Route model binding)
-                    |--------------------------------------------------------------------------
-                    */
-
-                    foreach ($route->originalParameters() as $paramName => $value) {
-                        $tagName = str()->snake($paramName) . '_id';
-                        $tag = $dataTags->where('name', $tagName)->first();
-                        if (!empty($tag) && !in_array($tag['name'], $logged)) {
-                            $this->saveDetailLog(
-                                $action,
-                                $tag['name'],
-                                $value
-                            );
-                            $logged[] = $tag['name'];
-                        }
-                    }
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | Dispatch log updater job
-                    |--------------------------------------------------------------------------
-                    */
 
                     UpdateSelaLogFiles::dispatch();
 
-                }
+                });
+
             }
         } catch (Exception $exception) {
             //
         }
+
         return $next($request);
     }
 
