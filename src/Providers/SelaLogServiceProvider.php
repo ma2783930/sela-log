@@ -15,9 +15,14 @@ class SelaLogServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->bind('sela', function () {
-            return new SelaHelper;
-        });
+        $this->app->bind('sela', fn() => new SelaHelper);
+        $this->commands([GenerateSelaConfig::class]);
+        $this->mergeConfigFrom(__DIR__ . '/../../config/sela.php', 'sela');
+        $this->publishes([
+            __DIR__ . '/../../database/migrations' => database_path('migrations'),
+            __DIR__ . '/../../config/sela.php'     => config_path('sela.php')
+        ], 'sela');
+        $this->loadMigrationsFrom(__DIR__ . '/../../database/migrations');
     }
 
     /**
@@ -27,17 +32,11 @@ class SelaLogServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $this->commands([
-            GenerateSelaConfig::class
-        ]);
-
-        $this->mergeConfigFrom(__DIR__ . '/../../config/sela.php', 'sela');
-
-        $this->publishes([
-            __DIR__ . '/../../database/migrations' => database_path('migrations'),
-            __DIR__ . '/../../config/sela.php'     => config_path('sela.php')
-        ], 'sela');
-
-        $this->loadMigrationsFrom(__DIR__ . '/../../database/migrations');
+        $useStorage                             = config('sela.use_storage');
+        $path                                   = config('sela.path');
+        app()->config['filesystems.disks.sela'] = [
+            'driver' => 'local',
+            'root'   => $useStorage ? storage_path($path) : 'file///' . $path
+        ];
     }
 }
