@@ -4,6 +4,7 @@ namespace Sela\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Sela\Console\Commands\GenerateSelaConfig;
+use Sela\Helpers\SelaHelper;
 
 class SelaLogServiceProvider extends ServiceProvider
 {
@@ -14,7 +15,9 @@ class SelaLogServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind('sela', function () {
+            return new SelaHelper;
+        });
     }
 
     /**

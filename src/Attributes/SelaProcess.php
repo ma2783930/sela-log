@@ -11,6 +11,7 @@ class SelaProcess
     public string $process_name;
     public string $info;
     public array  $data_tags = [];
+    public bool   $auto_log;
 
     /**
      * @param array $config
@@ -23,6 +24,7 @@ class SelaProcess
         $this->process_name = $config['name'];
         $this->info         = $config['info'];
         $this->data_tags    = $config['data_tags'];
+        $this->auto_log     = $config['auto_log'] ?? true;
     }
 
     /**
@@ -36,6 +38,10 @@ class SelaProcess
 
         if (!isset($config['info'])) {
             throw new Exception('Invalid configuration, `info` key does not exists.');
+        }
+
+        if (isset($tag['auto_log']) && !is_bool($tag['auto_log'])) {
+            throw new Exception('auto_log key type must be boolean.');
         }
 
         if (!isset($config['data_tags'])) {
