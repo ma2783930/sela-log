@@ -12,15 +12,13 @@ use Illuminate\Support\Facades\DB;
 use Sela\Models\ActionLog;
 use Sela\Models\DetailLog;
 use Sela\Models\MimeLog;
-use Sela\Traits\PathHelper;
 use Storage;
 
 class UpdateSelaLogFiles implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-    use PathHelper;
 
-    private int $encodeFlags = JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE;
+    private int $encodeFlags = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE;
 
     /**
      * Create a new job instance.
@@ -43,7 +41,6 @@ class UpdateSelaLogFiles implements ShouldQueue
             $actions = tap(ActionLog::oldest('timestamp')->lockForUpdate()->get(), function (Collection $actions) {
                 $actions->groupBy('file_name')
                         ->each(function (Collection $actions, $filePath) {
-                            $this->touchFile($filePath);
                             $this->appendActionLogsToFile($actions, $filePath);
                             $actions->each(function (ActionLog $action) {
                                 $action->details()
@@ -51,14 +48,12 @@ class UpdateSelaLogFiles implements ShouldQueue
                                        ->get()
                                        ->groupBy('file_name')
                                        ->each(function (Collection $details, $filePath) {
-                                           $this->touchFile($filePath);
                                            $this->appendDetailLogsToFile($details, $filePath);
                                        });
                                 $action->mimes()
                                        ->get()
                                        ->groupBy('file_name')
                                        ->each(function (Collection $mimes, $filePath) {
-                                           $this->touchFile($filePath);
                                            $this->appendMimeLogsToFile($mimes, $filePath);
                                        });
                             });
@@ -74,19 +69,6 @@ class UpdateSelaLogFiles implements ShouldQueue
     }
 
     /**
-     * @param string $filePath
-     * @return void
-     */
-    private function touchFile(string $filePath): void
-    {
-        $path = $this->getFullPath($filePath);
-        if (!file_exists($path)) {
-            $fileStream = fopen($path, 'w');
-            fclose($fileStream);
-        }
-    }
-
-    /**
      * @param \Illuminate\Database\Eloquent\Collection $actions
      * @param string                                   $filePath
      * @return void
@@ -94,7 +76,7 @@ class UpdateSelaLogFiles implements ShouldQueue
     private function appendActionLogsToFile(Collection $actions, string $filePath): void
     {
         Storage::disk('sela')->append(
-            $this->getFullPath($filePath),
+            $filePath,
             implode(
                 "\n",
                 $actions
@@ -106,9 +88,8 @@ class UpdateSelaLogFiles implements ShouldQueue
                         'timestamp'   => $log->timestamp,
                     ], $this->encodeFlags))
                     ->map(fn($log) => str_replace(',', ', ', $log))
-                    ->toArray())
+                    ->toArray()) . "\n"
         );
-        Storage::disk('sela')->append($this->getFullPath($filePath),"\n");
     }
 
     /**
@@ -118,8 +99,9 @@ class UpdateSelaLogFiles implements ShouldQueue
      */
     private function appendDetailLogsToFile(Collection $details, string $filePath): void
     {
-        $fileStream = fopen($this->getFullPath($filePath), 'a');
-        fwrite($fileStream, implode(
+        Storage::disk('sela')->append(
+            $filePath,
+            implode(
                 "\n",
                 $details
                     ->map(fn(DetailLog $log) => json_encode([
@@ -128,10 +110,8 @@ class UpdateSelaLogFiles implements ShouldQueue
                         'value'        => $log->value
                     ], $this->encodeFlags))
                     ->map(fn($log) => str_replace(',', ', ', $log))
-                    ->toArray())
+                    ->toArray()) . "\n"
         );
-        fwrite($fileStream, "\n");
-        fclose($fileStream);
     }
 
     /**
@@ -141,8 +121,9 @@ class UpdateSelaLogFiles implements ShouldQueue
      */
     private function appendMimeLogsToFile(Collection $mimes, string $filePath): void
     {
-        $fileStream = fopen($this->getFullPath($filePath), 'a');
-        fwrite($fileStream, implode(
+        Storage::disk('sela')->append(
+            $filePath,
+            implode(
                 "\n",
                 $mimes
                     ->map(fn(MimeLog $log) => json_encode([
@@ -152,9 +133,7 @@ class UpdateSelaLogFiles implements ShouldQueue
                         'mime'         => $log->mime
                     ], $this->encodeFlags))
                     ->map(fn($log) => str_replace(',', ', ', $log))
-                    ->toArray())
+                    ->toArray()) . "\n"
         );
-        fwrite($fileStream, "\n");
-        fclose($fileStream);
     }
 }
