@@ -13,6 +13,7 @@ use Sela\Models\ActionLog;
 use Sela\Models\DetailLog;
 use Sela\Models\MimeLog;
 use Sela\Traits\PathHelper;
+use Storage;
 
 class UpdateSelaLogFiles implements ShouldQueue
 {
@@ -92,8 +93,9 @@ class UpdateSelaLogFiles implements ShouldQueue
      */
     private function appendActionLogsToFile(Collection $actions, string $filePath): void
     {
-        $fileStream = fopen($this->getFullPath($filePath), 'a');
-        fwrite($fileStream, implode(
+        Storage::disk('sela')->append(
+            $this->getFullPath($filePath),
+            implode(
                 "\n",
                 $actions
                     ->map(fn(ActionLog $log) => json_encode([
@@ -106,8 +108,7 @@ class UpdateSelaLogFiles implements ShouldQueue
                     ->map(fn($log) => str_replace(',', ', ', $log))
                     ->toArray())
         );
-        fwrite($fileStream, "\n");
-        fclose($fileStream);
+        Storage::disk('sela')->append($this->getFullPath($filePath),"\n");
     }
 
     /**

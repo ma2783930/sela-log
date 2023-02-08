@@ -2,8 +2,6 @@
 
 namespace Sela\Traits;
 
-use Storage;
-
 trait PathHelper
 {
     /**
@@ -12,12 +10,10 @@ trait PathHelper
      */
     public function getFullPath(string $path = ''): string
     {
-        $basePath = str_replace(
+        return str_replace(
             ['{configPath}', '{path}'],
             [config('sela.path'), $path],
             '{configPath}/{path}'
         );
-
-        return Storage::disk('sela')->path($basePath);
     }
 }

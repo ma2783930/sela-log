@@ -2,18 +2,16 @@
 
 namespace Sela\Console\Commands;
 
-use Sela\Attributes\SelaProcess;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use ReflectionClass;
-use Sela\Traits\PathHelper;
+use Sela\Attributes\SelaProcess;
 use SplFileInfo;
 use Symfony\Component\Finder\Finder;
 
 class GenerateSelaConfig extends Command
 {
-    use PathHelper;
-
     protected string $rootNamespace;
     protected string $basePath;
 
@@ -72,18 +70,17 @@ class GenerateSelaConfig extends Command
             }
         });
 
-        $path = $this->getFullPath('logconfig.json');
-        if (file_exists($path)) {
-            unlink($path);
+        $fileName = 'logconfig.json';
+
+        if (Storage::disk('sela')->exists($fileName)) {
+            Storage::disk('sela')->delete($fileName);
         }
 
-        $fileStream = fopen($path, 'w');
-        fwrite($fileStream, json_encode($config, JSON_PRETTY_PRINT));
-        fclose($fileStream);
+        Storage::disk('sela')->put($fileName, json_encode($config, JSON_PRETTY_PRINT));
 
         $this->line('=======================================================================================');
         $this->info('Sela configuration files successfully created in:');
-        $this->line($path);
+        $this->line(Storage::disk('sela')->path($fileName));
         $this->line('=======================================================================================');
 
         return 0;
