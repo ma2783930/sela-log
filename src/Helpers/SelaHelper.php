@@ -5,6 +5,7 @@ namespace Sela\Helpers;
 use Illuminate\Http\Request;
 use Sela\Attributes\SelaProcess;
 use Sela\Jobs\UpdateSelaLogFiles;
+use Sela\Traits\AttributeReader;
 use Sela\Traits\HasDatabaseLog;
 use ReflectionClass;
 use Exception;
@@ -12,6 +13,7 @@ use Exception;
 class SelaHelper
 {
     use HasDatabaseLog;
+    use AttributeReader;
 
     /**
      * @return array[]
@@ -35,15 +37,7 @@ class SelaHelper
     public function insertLog(Request $request, array $values): void
     {
         try {
-            $controller = $request->route()->controller;
-            $method     = $request->route()->getActionMethod();
-            $reflection = new ReflectionClass(get_class($controller));
-            $method     = $reflection->getMethod($method);
-            $attribute  = $method->getAttributes(SelaProcess::class);
-
-            if (!empty($attribute)) {
-                /** @var $attributeClass SelaProcess */
-                $attributeClass = $attribute[0]->newInstance();
+            if (!empty($attributeClass = $this->getProcessAttribute($request))) {
 
                 foreach ($attributeClass->data_tags as $tag) {
                     if (!isset($values[$tag['name']])) {
