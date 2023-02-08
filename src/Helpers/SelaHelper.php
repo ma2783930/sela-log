@@ -3,12 +3,19 @@
 namespace Sela\Helpers;
 
 use Illuminate\Http\Request;
+use Sela\Attributes\SelaProcess;
+use Sela\Jobs\UpdateSelaLogFiles;
 use Sela\Traits\HasDatabaseLog;
+use ReflectionClass;
+use Exception;
 
 class SelaHelper
 {
     use HasDatabaseLog;
 
+    /**
+     * @return array[]
+     */
     public function getPaginationDataTags(): array
     {
         return [
@@ -20,16 +27,40 @@ class SelaHelper
         ];
     }
 
-    public function insertLog(Request $request, $processName, $dataTags = []): void
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @param array                    $values
+     * @return void
+     */
+    public function insertLog(Request $request, array $values): void
     {
-        /*$action = $this->insertActionLog($processName);
+        try {
+            $controller = $request->route()->controller;
+            $method     = $request->route()->getActionMethod();
+            $reflection = new ReflectionClass(get_class($controller));
+            $method     = $reflection->getMethod($method);
+            $attribute  = $method->getAttributes(SelaProcess::class);
 
-        foreach ($dataTags as $data_tag) {
-            if ($request->has($data_tag['name'])) {
-                $this->insertDetailLog($action, $data_tag['name'], $request->{$data_tag['name']}, $data_tag['log_mime'] ?? false);
-            } else if (!empty($value = $request->route()->originalParameter(str($data_tag['name'])->rtrim('_id')->camel()->toString()))) {
-                $this->insertDetailLog($action, $data_tag['name'], $value);
+            if (!empty($attribute)) {
+                /** @var $attributeClass SelaProcess */
+                $attributeClass = $attribute[0]->newInstance();
+
+                foreach ($attributeClass->data_tags as $tag) {
+                    if (!isset($values[$tag['name']])) {
+                        throw new Exception('All of data tags must be present.');
+                    }
+                }
+
+                $action = $this->insertActionLog($attributeClass->process_name);
+
+                foreach ($attributeClass->data_tags as $data_tag) {
+                    $this->insertDetailLog($action, $data_tag['name'], $values[$data_tag['name']], $data_tag['log_mime'] ?? false);
+                }
+
+                UpdateSelaLogFiles::dispatch();
             }
-        }*/
+        } catch (Exception $exception) {
+            //
+        }
     }
 }

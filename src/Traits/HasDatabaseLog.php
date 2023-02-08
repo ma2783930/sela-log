@@ -7,6 +7,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File as FileFacade;
 use Sela\Models\ActionLog;
+use Str;
 
 trait HasDatabaseLog
 {
@@ -60,7 +61,7 @@ trait HasDatabaseLog
                         mkdir($filePath, '0775', true);
                     }
 
-                    $fileName = sprintf('%s_%s', time(), $value->getClientOriginalName());
+                    $fileName = Str::uuid() . '.' . $value->guessExtension();
                     $mimeType = $value->getMimeType();
                     FileFacade::copy($value->path(), sprintf('%s/%s', $filePath, $fileName));
 
