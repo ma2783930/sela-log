@@ -15,7 +15,7 @@ trait AttributeReader
      */
     public function getProcessAttribute(Request $request): ?SelaProcess
     {
-        $controller = $request->route()->controller;
+        $controller = $request->route()?->controller;
 
         if (empty($controller)) {
             return null;
