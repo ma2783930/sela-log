@@ -48,9 +48,9 @@ trait HasDatabaseLog
 
         } else {
 
-            $dateFormat            = config('sela.path_date_format', 'Y_m_d');
-            $directoryPath         = storage_path(config('sela.path') . '/files/' . $dateFormat);
-            $relativeDirectoryPath = './files/' . $dateFormat;
+            $dateFormat            = verta()->format(config('sela.path_date_format', 'Y_m_d'));
+            $directoryPath         = storage_path(config('sela.path') . '/' . $dateFormat . '/files/');
+            $relativeDirectoryPath = './files';
 
             try {
 

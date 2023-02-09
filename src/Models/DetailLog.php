@@ -16,5 +16,5 @@ class DetailLog extends BaseModel
     protected     $casts            = [
         'log_mime' => 'boolean'
     ];
-    public string $fileNameTemplate = 'detaillog_%.json';
+    public string $fileNameTemplate = '%/detaillog.json';
 }

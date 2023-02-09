@@ -14,7 +14,7 @@ class ActionLog extends BaseModel
     use HasUuid;
 
     protected $table        = 'sela_action_logs';
-    public string $fileNameTemplate = 'actionlog_%.json';
+    public string $fileNameTemplate = '%/actionlog.json';
 
     /*
     |--------------------------------------------------------------------------
