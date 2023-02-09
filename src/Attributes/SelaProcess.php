@@ -4,6 +4,7 @@ namespace Sela\Attributes;
 
 use Attribute;
 use Exception;
+use Arr;
 
 #[Attribute(Attribute::TARGET_METHOD)]
 class SelaProcess
@@ -19,11 +20,14 @@ class SelaProcess
      */
     public function __construct(array $config)
     {
-        $this->validateConfiguration($config);
+        //$this->validateConfiguration($config);
 
         $this->process_name = $config['name'];
         $this->info         = $config['info'];
-        $this->data_tags    = $config['data_tags'];
+        $this->data_tags    = Arr::map($config['data_tags'], fn($tag) => [
+            'RType' => $tag['RType'] ?? 'L',
+            ...$tag,
+        ]);
         $this->auto_log     = $config['auto_log'] ?? true;
     }
 
@@ -54,12 +58,6 @@ class SelaProcess
 
         foreach ($config['data_tags'] as $tag) {
 
-            $keysCount = count(array_keys($tag));
-
-            if ($keysCount < 2 || $keysCount > 3) {
-                throw new Exception('data_tags array must have 2 or 3 keys.');
-            }
-
             if (!isset($tag['name'])) {
                 throw new Exception('Missing `name` key in data tag.');
             }
@@ -75,6 +73,7 @@ class SelaProcess
             if (isset($tag['log_mime']) && !is_bool($tag['log_mime'])) {
                 throw new Exception('log_mime key type must be boolean.');
             }
+
         }
     }
 }

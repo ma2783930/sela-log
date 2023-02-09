@@ -56,15 +56,27 @@ class GenerateSelaConfig extends Command
             if (class_exists($className)) {
                 $class = new ReflectionClass($className);
                 foreach ($class->getMethods() as $method) {
-                    $process_nameAttribute = $method->getAttributes(SelaProcess::class);
-                    if (!empty($process_nameAttribute)) {
+                    $processNameAttribute = $method->getAttributes(SelaProcess::class);
+                    if (!empty($processNameAttribute)) {
                         /** @var $class SelaProcess */
-                        $class                                    = $process_nameAttribute[0]->newInstance();
+                        $class                                     = $processNameAttribute[0]->newInstance();
                         $config['processes'][$class->process_name] = [
-                            'name'     => $class->process_name,
-                            'info'     => $class->info,
-                            'data_tags' => $class->data_tags
+                            'name'      => $class->process_name,
+                            'info'      => $class->info,
+                            'data_tags' => collect($class->data_tags)
+                                ->filter(fn($tag) => !isset($tag['data_tags']))
+                                ->toArray()
                         ];
+
+                        collect($class->data_tags)
+                            ->filter(fn($tag) => isset($tag['data_tags']))
+                            ->each(function ($tag) use (&$config) {
+                                $config['processes'][$tag['process_name']] = [
+                                    'name'      => $tag['process_name'],
+                                    'info'      => $tag['info'],
+                                    'data_tags' => $tag['data_tags']
+                                ];
+                            });
                     }
                 }
             }

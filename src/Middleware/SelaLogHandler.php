@@ -32,13 +32,68 @@ class SelaLogHandler
 
                         $action = $this->insertActionLog($attributeClass->process_name);
 
-                        foreach ($attributeClass->data_tags as $data_tag) {
-                            if ($request->has($data_tag['name'])) {
-                                $this->insertDetailLog($action, $data_tag['name'], $request->{$data_tag['name']}, $data_tag['log_mime'] ?? false);
-                            } else if (!empty($value = $request->route()->originalParameter(str($data_tag['name'])->rtrim('_id')->camel()->toString()))) {
-                                $this->insertDetailLog($action, $data_tag['name'], $value);
-                            }
-                        }
+                        collect($attributeClass->data_tags)
+                            ->filter(fn($data_tag) => !isset($data_tag['data_tags']))
+                            ->each(function ($data_tag) use ($action, $request) {
+
+                                if ($request->has($data_tag['name'])) {
+
+                                    $this->insertDetailLog(
+                                        $action,
+                                        $data_tag['name'],
+                                        $request->{$data_tag['name']},
+                                        $data_tag['log_mime'] ?? false
+                                    );
+
+                                } else {
+
+                                    $foreignKeyName = str($data_tag['name'])->rtrim('_id')->camel()->toString();
+                                    $value          = $request->route()->originalParameter($foreignKeyName) ??
+                                        $request->route()->originalParameter($data_tag['name']);
+
+                                    $this->insertDetailLog(
+                                        $action,
+                                        $data_tag['name'],
+                                        $value
+                                    );
+
+                                }
+
+                            });
+
+                        collect($attributeClass->data_tags)
+                            ->filter(fn($data_tag) => isset($data_tag['data_tags']))
+                            ->each(function ($childProcess) use ($attributeClass, $request) {
+
+                                if ($childProcess['is_multi']) {
+
+                                    foreach ($request->input($childProcess['name'], []) as $values) {
+                                        $childAction = $this->insertActionLog($childProcess['process_name'], $attributeClass->process_name);
+                                        foreach ($childProcess['data_tags'] as $childTag) {
+                                            $this->insertDetailLog(
+                                                $childAction,
+                                                $childTag['name'],
+                                                $values[$childTag['name']] ?? "",
+                                                $childTag['log_mime'] ?? false
+                                            );
+                                        }
+                                    }
+
+                                } else {
+
+                                    $values = $request->input($childProcess['name']);
+                                    $childAction = $this->insertActionLog($childProcess['process_name'], $attributeClass->process_name);
+                                    foreach ($childProcess['data_tags'] as $childTag) {
+                                        $this->insertDetailLog(
+                                            $childAction,
+                                            $childTag['name'],
+                                            $values[$childTag['name']] ?? "",
+                                            $childTag['log_mime'] ?? false
+                                        );
+                                    }
+                                }
+
+                            });
 
                         UpdateSelaLogFiles::dispatch();
 

@@ -46,12 +46,14 @@ class SelaHelper
                 $action = $this->insertActionLog($attributeClass->process_name);
 
                 foreach ($attributeClass->data_tags as $data_tag) {
-                    $this->insertDetailLog(
-                        $action,
-                        $data_tag['name'],
-                        $values[$data_tag['name']],
-                        $data_tag['log_mime'] ?? false
-                    );
+                    if (!empty($values[$data_tag['name']])) {
+                        $this->insertDetailLog(
+                            $action,
+                            $data_tag['name'],
+                            $values[$data_tag['name']],
+                            $data_tag['log_mime'] ?? false
+                        );
+                    }
                 }
 
                 UpdateSelaLogFiles::dispatch();

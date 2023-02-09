@@ -5,21 +5,22 @@ namespace Sela\Traits;
 use Exception;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\File as FileFacade;
 use Sela\Models\ActionLog;
-use Str;
 use Storage;
+use Str;
 
 trait HasDatabaseLog
 {
     /**
-     * @param string $processName
+     * @param string      $processName
+     * @param string|null $parentProc
      * @return \Sela\Models\ActionLog
      * @noinspection PhpUndefinedFieldInspection
      */
-    public function insertActionLog(string $processName): ActionLog
+    public function insertActionLog(string $processName, string $parentProc = null): ActionLog
     {
         return ActionLog::forceCreate([
+            'parent_proc' => $parentProc,
             'process_tag' => $processName,
             'user_name'   => Auth::user() ? Auth::user()->username : 'guest',
         ]);
