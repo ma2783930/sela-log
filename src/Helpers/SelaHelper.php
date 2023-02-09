@@ -2,13 +2,11 @@
 
 namespace Sela\Helpers;
 
+use Exception;
 use Illuminate\Http\Request;
-use Sela\Attributes\SelaProcess;
 use Sela\Jobs\UpdateSelaLogFiles;
 use Sela\Traits\AttributeReader;
 use Sela\Traits\HasDatabaseLog;
-use ReflectionClass;
-use Exception;
 
 class SelaHelper
 {
@@ -48,7 +46,12 @@ class SelaHelper
                 $action = $this->insertActionLog($attributeClass->process_name);
 
                 foreach ($attributeClass->data_tags as $data_tag) {
-                    $this->insertDetailLog($action, $data_tag['name'], $values[$data_tag['name']], $data_tag['log_mime'] ?? false);
+                    $this->insertDetailLog(
+                        $action,
+                        $data_tag['name'],
+                        $values[$data_tag['name']],
+                        $data_tag['log_mime'] ?? false
+                    );
                 }
 
                 UpdateSelaLogFiles::dispatch();

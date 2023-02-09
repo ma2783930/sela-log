@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File as FileFacade;
 use Sela\Models\ActionLog;
 use Str;
+use Storage;
 
 trait HasDatabaseLog
 {
@@ -49,27 +50,23 @@ trait HasDatabaseLog
         } else {
 
             $dateFormat            = verta()->format(config('sela.path_date_format', 'Y_m_d'));
-            $directoryPath         = storage_path(config('sela.path') . '/' . $dateFormat . '/files/');
+            $directoryPath         = $dateFormat . '/files';
             $relativeDirectoryPath = './files';
 
             try {
 
                 if ($value instanceof UploadedFile) {
 
-                    if (!file_exists($directoryPath)) {
-                        mkdir($directoryPath, '0775', true);
-                    }
-
                     $fileName = Str::uuid() . '.' . $value->guessExtension();
                     $mimeType = $value->getMimeType();
-                    FileFacade::copy($value->path(), sprintf('%s/%s', $directoryPath, $fileName));
+                    Storage::disk('sela')->put("{$directoryPath}/{$fileName}", $value->getContent());
 
                 } else {
 
                     $file     = base64_to_file($value);
                     $fileName = sprintf('%s.%s', time(), $file->extension());
                     $mimeType = $file->getMimeType();
-                    $file->move($directoryPath, $fileName);
+                    Storage::disk('sela')->put("{$directoryPath}/{$fileName}", $file->getContent());
 
                 }
 
@@ -108,7 +105,7 @@ trait HasDatabaseLog
                 */
 
                 $fileName = time() . '.' . '.tmp';
-                file_put_contents(sprintf('%s/%s', $directoryPath, $fileName), $value);
+                Storage::disk('sela')->put("{$directoryPath}/{$fileName}}", $value);
 
                 $path = sprintf('%s/%s', $relativeDirectoryPath, $fileName);
 
