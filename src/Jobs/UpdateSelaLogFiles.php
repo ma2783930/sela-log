@@ -87,7 +87,7 @@ class UpdateSelaLogFiles implements ShouldQueue
                         'user_name'   => $log->user_name,
                         'timestamp'   => $log->timestamp,
                     ], $this->encodeFlags))
-                    ->map(fn($log) => str_replace(',', ', ', $log))
+                    ->map(fn($log) => $this->addSpaceAfterComma($log))
                     ->toArray())
         );
     }
@@ -109,7 +109,7 @@ class UpdateSelaLogFiles implements ShouldQueue
                         'data_tag'     => $log->data_tag,
                         'value'        => $log->value
                     ], $this->encodeFlags))
-                    ->map(fn($log) => str_replace(',', ', ', $log))
+                    ->map(fn($log) => $this->addSpaceAfterComma($log))
                     ->toArray())
         );
     }
@@ -132,8 +132,17 @@ class UpdateSelaLogFiles implements ShouldQueue
                         'value'        => $log->value,
                         'mime'         => $log->mime
                     ], $this->encodeFlags))
-                    ->map(fn($log) => str_replace(',', ', ', $log))
+                    ->map(fn($log) => $this->addSpaceAfterComma($log))
                     ->toArray())
         );
+    }
+
+    /**
+     * @param string $string
+     * @return string
+     */
+    private function addSpaceAfterComma(string $string): string
+    {
+        return str_replace(',"', ', "', $string);
     }
 }
