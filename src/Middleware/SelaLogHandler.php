@@ -28,6 +28,7 @@ class SelaLogHandler
         if (!empty($attributeClass = $this->getProcessAttribute($request))) {
             try {
                 if ($attributeClass->auto_log) {
+
                     DB::transaction(function () use ($request, $attributeClass) {
 
                         $action = $this->insertActionLog($attributeClass->process_name);
