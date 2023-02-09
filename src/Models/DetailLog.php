@@ -14,7 +14,8 @@ class DetailLog extends BaseModel
 
     protected     $table            = 'sela_detail_logs';
     protected     $casts            = [
-        'log_mime' => 'boolean'
+        'log_mime' => 'boolean',
+        'value'    => 'json'
     ];
     public string $fileNameTemplate = '%/detaillog.json';
 }
