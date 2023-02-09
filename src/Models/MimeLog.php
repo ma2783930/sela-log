@@ -13,5 +13,5 @@ class MimeLog extends BaseModel
     use HasUuid;
 
     protected $table        = 'sela_mime_logs';
-    public string $fileNameTemplate = '%/mimelog.json';
+    public string $fileNameTemplate = 'mimelog_%.json';
 }
