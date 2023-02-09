@@ -32,8 +32,8 @@
     "require": {
         "php": "^8.0.2",
         "laravel/framework": "^7|^8|^9",
-        "ext-mbstring": "*",
         "ma2783930/helpers": "dev-master",
-        "hekmatinasser/verta": "^2"
+        "hekmatinasser/verta": "^2",
+        "ma2783930/eloquent-traits": "dev-master"
     }
 }
