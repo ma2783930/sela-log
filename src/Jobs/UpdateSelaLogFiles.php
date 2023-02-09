@@ -88,7 +88,7 @@ class UpdateSelaLogFiles implements ShouldQueue
                         'timestamp'   => $log->timestamp,
                     ], $this->encodeFlags))
                     ->map(fn($log) => str_replace(',', ', ', $log))
-                    ->toArray()) . "\n"
+                    ->toArray())
         );
     }
 
@@ -110,7 +110,7 @@ class UpdateSelaLogFiles implements ShouldQueue
                         'value'        => $log->value
                     ], $this->encodeFlags))
                     ->map(fn($log) => str_replace(',', ', ', $log))
-                    ->toArray()) . "\n"
+                    ->toArray())
         );
     }
 
@@ -133,7 +133,7 @@ class UpdateSelaLogFiles implements ShouldQueue
                         'mime'         => $log->mime
                     ], $this->encodeFlags))
                     ->map(fn($log) => str_replace(',', ', ', $log))
-                    ->toArray()) . "\n"
+                    ->toArray())
         );
     }
 }
