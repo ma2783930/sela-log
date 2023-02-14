@@ -65,11 +65,18 @@ class GenerateSelaConfig extends Command
                             'info'      => $class->info,
                             'data_tags' => collect($class->data_tags)
                                 ->filter(fn($tag) => !isset($tag['data_tags']))
-                                ->map(fn($tag) => [
-                                    'RType' => 'L',
-                                    'name'  => $tag['name'],
-                                    'info'  => $tag['info']
-                                ])
+                                ->map(function ($tag) {
+                                    $data = [
+                                        'RType' => 'L',
+                                        'name'  => $tag['name'],
+                                        'info'  => $tag['info']
+                                    ];
+                                    if (isset($tag['log_mime']) && $tag['log_mime']) {
+                                        $data['log_mime'] = true;
+                                    }
+
+                                    return $data;
+                                })
                                 ->toArray()
                         ];
 
@@ -79,11 +86,19 @@ class GenerateSelaConfig extends Command
                                 $config['processes'][$tag['process_name']] = [
                                     'name'      => $tag['process_name'],
                                     'info'      => $tag['info'],
-                                    'data_tags' => collect($tag['data_tags'])->map(fn($tag) => [
-                                        'RType' => 'L',
-                                        'name'  => $tag['name'],
-                                        'info'  => $tag['info']
-                                    ])
+                                    'data_tags' => collect($tag['data_tags'])->map(function ($tag) {
+                                        $data = [
+                                            'RType' => 'L',
+                                            'name'  => $tag['name'],
+                                            'info'  => $tag['info']
+                                        ];
+
+                                        if (isset($tag['log_mime']) && $tag['log_mime']) {
+                                            $data['log_mime'] = true;
+                                        }
+
+                                        return $data;
+                                    })
                                 ];
                             });
                     }
