@@ -65,6 +65,11 @@ class GenerateSelaConfig extends Command
                             'info'      => $class->info,
                             'data_tags' => collect($class->data_tags)
                                 ->filter(fn($tag) => !isset($tag['data_tags']))
+                                ->map(fn($tag) => [
+                                    'RType' => 'L',
+                                    'name'  => $tag['name'],
+                                    'info'  => $tag['info']
+                                ])
                                 ->toArray()
                         ];
 
@@ -74,7 +79,11 @@ class GenerateSelaConfig extends Command
                                 $config['processes'][$tag['process_name']] = [
                                     'name'      => $tag['process_name'],
                                     'info'      => $tag['info'],
-                                    'data_tags' => $tag['data_tags']
+                                    'data_tags' => collect($tag['data_tags'])->map(fn($tag) => [
+                                        'RType' => 'L',
+                                        'name'  => $tag['name'],
+                                        'info'  => $tag['info']
+                                    ])
                                 ];
                             });
                     }
