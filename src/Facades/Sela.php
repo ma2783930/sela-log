@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Facade;
 
 /**
  * @method static array getPaginationDataTags()
- * @method static void insertLog(Request $request, $processName, $dataTags = [])
+ * @method static void insertLog(Request $request, $dataTags = [])
  */
 class Sela extends Facade
 {
