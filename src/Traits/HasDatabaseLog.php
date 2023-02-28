@@ -52,7 +52,6 @@ trait HasDatabaseLog
 
             $dateFormat            = verta()->format(config('sela.path_date_format', 'Y_m_d'));
             $directoryPath         = './files/' . $dateFormat;
-            $relativeDirectoryPath = './files';
 
             try {
 
@@ -71,7 +70,7 @@ trait HasDatabaseLog
 
                 }
 
-                $logValue = sprintf('%s/%s', $relativeDirectoryPath, $fileName);
+                $logValue = sprintf('%s/%s', $directoryPath, $fileName);
 
                 /*
                 |--------------------------------------------------------------------------
@@ -108,7 +107,7 @@ trait HasDatabaseLog
                 $fileName = time() . '.' . '.tmp';
                 Storage::disk('sela')->put("{$directoryPath}/{$fileName}}", $value);
 
-                $path = sprintf('%s/%s', $relativeDirectoryPath, $fileName);
+                $path = sprintf('%s/%s', $directoryPath, $fileName);
 
                 $action->details()->create([
                     'data_tag' => $tag,
