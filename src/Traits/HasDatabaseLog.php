@@ -50,21 +50,21 @@ trait HasDatabaseLog
 
         } else {
 
-            $dateFormat            = verta()->format(config('sela.path_date_format', 'Y_m_d'));
-            $directoryPath         = './files/' . $dateFormat;
+            $dateFormat    = verta()->format(config('sela.path_date_format', 'Y_m_d'));
+            $directoryPath = './files/' . $dateFormat;
 
             try {
 
                 if ($value instanceof UploadedFile) {
 
-                    $fileName = Str::uuid() . '.' . $value->guessExtension();
+                    $fileName = sprintf('%s.%s', Str::uuid(), $value->guessExtension());
                     $mimeType = $value->getMimeType();
                     Storage::disk('sela')->put("{$directoryPath}/{$fileName}", $value->getContent());
 
                 } else {
 
                     $file     = base64_to_file($value);
-                    $fileName = sprintf('%s.%s', time(), $file->extension());
+                    $fileName = sprintf('%s.%s', Str::uuid(), $file->extension());
                     $mimeType = $file->getMimeType();
                     Storage::disk('sela')->put("{$directoryPath}/{$fileName}", $file->getContent());
 
