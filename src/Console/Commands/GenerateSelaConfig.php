@@ -36,10 +36,10 @@ class GenerateSelaConfig extends Command
      */
     public function handle(): int
     {
-        $directory = app_path('Http/Controllers');
+        $directories = config('sela.directories');
         $files     = (new Finder())->files()
                                    ->name('*.php')
-                                   ->in($directory)
+                                   ->in($directories)
                                    ->sortByName();
 
         $config = [
