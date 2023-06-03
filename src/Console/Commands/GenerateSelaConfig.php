@@ -5,6 +5,7 @@ namespace Sela\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Psy\Reflection\ReflectionNamespace;
 use ReflectionClass;
 use Sela\Attributes\SelaProcess;
 use SplFileInfo;
@@ -14,6 +15,7 @@ class GenerateSelaConfig extends Command
 {
     protected string $rootNamespace;
     protected string $basePath;
+    protected array  $directories = [];
 
     /**
      * The name and signature of the console command.
@@ -30,18 +32,21 @@ class GenerateSelaConfig extends Command
     protected $description = 'Generate config of sela log.';
 
     /**
+     * Class Constructor
+     */
+    public function __construct()
+    {
+        $this->directories = config('sela.directories');
+        parent::__construct();
+    }
+
+    /**
      * Execute the console command.
      *
      * @return int
      */
     public function handle(): int
     {
-        $directories = config('sela.directories');
-        $files     = (new Finder())->files()
-                                   ->name('*.php')
-                                   ->in($directories)
-                                   ->sortByName();
-
         $config = [
             'application' => [
                 'name'    => config('app.name'),
@@ -50,63 +55,70 @@ class GenerateSelaConfig extends Command
             'processes'   => []
         ];
 
-        collect($files)->each(function (SplFileInfo $file) use (&$config) {
-            $className = $this->fullQualifiedClassNameFromFile($file);
+        foreach ($this->directories as $rootNamespace => $dir) {
+            $files = (new Finder())->files()
+                                   ->name('*.php')
+                                   ->in($dir)
+                                   ->sortByName();
 
-            if (class_exists($className)) {
-                $class = new ReflectionClass($className);
-                foreach ($class->getMethods() as $method) {
-                    $processNameAttribute = $method->getAttributes(SelaProcess::class);
-                    if (!empty($processNameAttribute)) {
-                        /** @var $class SelaProcess */
-                        $class                                     = $processNameAttribute[0]->newInstance();
-                        $config['processes'][$class->process_name] = [
-                            'name'      => $class->process_name,
-                            'info'      => $class->info,
-                            'data_tags' => collect($class->data_tags)
-                                ->filter(fn($tag) => !isset($tag['data_tags']))
-                                ->values()
-                                ->map(function ($tag) {
-                                    $data = [
-                                        'RType' => 'L',
-                                        'name'  => $tag['name'],
-                                        'info'  => $tag['info']
-                                    ];
-                                    if (isset($tag['log_mime']) && $tag['log_mime']) {
-                                        $data['log_mime'] = true;
-                                    }
+            collect($files)->each(function (SplFileInfo $file) use (&$config, $rootNamespace) {
+                $className = $this->fullQualifiedClassNameFromFile($file, $rootNamespace);
 
-                                    return $data;
-                                })
-                                ->toArray()
-                        ];
-
-                        collect($class->data_tags)
-                            ->filter(fn($tag) => isset($tag['data_tags']))
-                            ->values()
-                            ->each(function ($tag) use (&$config) {
-                                $config['processes'][$tag['process_name']] = [
-                                    'name'      => $tag['process_name'],
-                                    'info'      => $tag['info'],
-                                    'data_tags' => collect($tag['data_tags'])->map(function ($tag) {
+                if (class_exists($className)) {
+                    $class = new ReflectionClass($className);
+                    foreach ($class->getMethods() as $method) {
+                        $processNameAttribute = $method->getAttributes(SelaProcess::class);
+                        if (!empty($processNameAttribute)) {
+                            /** @var $class SelaProcess */
+                            $class                                     = $processNameAttribute[0]->newInstance();
+                            $config['processes'][$class->process_name] = [
+                                'name'      => $class->process_name,
+                                'info'      => $class->info,
+                                'data_tags' => collect($class->data_tags)
+                                    ->filter(fn($tag) => !isset($tag['data_tags']))
+                                    ->values()
+                                    ->map(function ($tag) {
                                         $data = [
                                             'RType' => 'L',
                                             'name'  => $tag['name'],
                                             'info'  => $tag['info']
                                         ];
-
                                         if (isset($tag['log_mime']) && $tag['log_mime']) {
                                             $data['log_mime'] = true;
                                         }
 
                                         return $data;
                                     })
-                                ];
-                            });
+                                    ->toArray()
+                            ];
+
+                            collect($class->data_tags)
+                                ->filter(fn($tag) => isset($tag['data_tags']))
+                                ->values()
+                                ->each(function ($tag) use (&$config) {
+                                    $config['processes'][$tag['process_name']] = [
+                                        'name'      => $tag['process_name'],
+                                        'info'      => $tag['info'],
+                                        'data_tags' => collect($tag['data_tags'])->map(function ($tag) {
+                                            $data = [
+                                                'RType' => 'L',
+                                                'name'  => $tag['name'],
+                                                'info'  => $tag['info']
+                                            ];
+
+                                            if (isset($tag['log_mime']) && $tag['log_mime']) {
+                                                $data['log_mime'] = true;
+                                            }
+
+                                            return $data;
+                                        })
+                                    ];
+                                });
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
 
         $fileName = 'logconfig.json';
 
@@ -124,16 +136,24 @@ class GenerateSelaConfig extends Command
         return 0;
     }
 
-    protected function fullQualifiedClassNameFromFile(SplFileInfo $file): string
+    protected function fullQualifiedClassNameFromFile(SplFileInfo $file, string $rootNamespace): string
     {
         $class = trim(Str::replaceFirst(app()->path(), '', $file->getRealPath()), DIRECTORY_SEPARATOR);
 
-        $class = str_replace(
-            [DIRECTORY_SEPARATOR, 'App\\'],
-            ['\\', app()->getNamespace()],
-            ucfirst(Str::replaceLast('.php', '', $class))
-        );
+        if (str_contains($class, 'vendor')) {
+            $class = str_replace(
+                DIRECTORY_SEPARATOR,
+                '\\',
+                ucfirst(Str::replaceLast('.php', '', explode('src\\', $class)[1]))
+            );
+        } else {
+            $class = str_replace(
+                DIRECTORY_SEPARATOR,
+                '\\',
+                ucfirst(Str::replaceLast('.php', '', $class))
+            );
+        }
 
-        return app()->getNamespace() . $class;
+        return sprintf('%s\\%s', $rootNamespace, $class);
     }
 }

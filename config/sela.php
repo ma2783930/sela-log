@@ -2,9 +2,9 @@
 
 return [
     'path'             => 'logs/sela',
-    'path_date_format' => 'Y_m_d_H',
+    'path_date_format' => 'Y_m_d',
     'use_storage'      => true,
-    'directories'  => [
-        app_path('Http/Controllers')
+    'directories'      => [
+        'App' => base_path('app/Http/Controllers')
     ]
 ];
