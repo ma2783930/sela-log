@@ -19,10 +19,8 @@ class SelaLogServiceProvider extends ServiceProvider
         $this->commands([GenerateSelaConfig::class]);
         $this->mergeConfigFrom(__DIR__ . '/../../config/sela.php', 'sela');
         $this->publishes([
-            //__DIR__ . '/../../database/migrations' => database_path('migrations'),
-            __DIR__ . '/../../config/sela.php'     => config_path('sela.php')
+            __DIR__ . '/../../config/sela.php' => config_path('sela.php')
         ], 'sela');
-        $this->loadMigrationsFrom(__DIR__ . '/../../database/migrations');
     }
 
     /**
@@ -34,6 +32,14 @@ class SelaLogServiceProvider extends ServiceProvider
     {
         $useStorage                             = config('sela.use_storage');
         $path                                   = config('sela.path');
+        $loadMigrations                         = config('sela.load_migrations', false);
+        if ($loadMigrations) {
+            $this->publishes([
+                __DIR__ . '/../../database/migrations' => database_path('migrations'),
+            ], 'sela');
+            $this->loadMigrationsFrom(__DIR__ . '/../../database/migrations');
+        }
+
         app()->config['filesystems.disks.sela'] = [
             'driver' => 'local',
             'root'   => $useStorage ? storage_path($path) : $path
