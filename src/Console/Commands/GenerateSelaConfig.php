@@ -143,7 +143,7 @@ class GenerateSelaConfig extends Command
             $class = str_replace(
                 DIRECTORY_SEPARATOR,
                 '\\',
-                ucfirst(Str::replaceLast('.php', '', explode('src\\', $class)[1]))
+                ucfirst(Str::replaceLast('.php', '', explode('src' . DIRECTORY_SEPARATOR, $class)[1]))
             );
         } else {
             $class = str_replace(
