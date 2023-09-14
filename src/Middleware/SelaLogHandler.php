@@ -68,15 +68,27 @@ class SelaLogHandler
 
                                 if ($childProcess['is_multi']) {
 
-                                    foreach ($request->input($childProcess['name'], []) as $values) {
-                                        $childAction = $this->insertActionLog($childProcess['process_name'], $attributeClass->process_name);
-                                        foreach ($childProcess['data_tags'] as $childTag) {
+                                    if ($childProcess['base64_array']) {
+                                        foreach ($request->input($childProcess['name'], []) as $value) {
+                                            $childAction = $this->insertActionLog($childProcess['process_name'], $attributeClass->process_name);
                                             $this->insertDetailLog(
                                                 $childAction,
-                                                $childTag['name'],
-                                                $values[$childTag['name']] ?? "",
-                                                $childTag['log_mime'] ?? false
+                                                'file_content',
+                                                $value ?? "",
+                                                true
                                             );
+                                        }
+                                    } else {
+                                        foreach ($request->input($childProcess['name'], []) as $values) {
+                                            $childAction = $this->insertActionLog($childProcess['process_name'], $attributeClass->process_name);
+                                            foreach ($childProcess['data_tags'] as $childTag) {
+                                                $this->insertDetailLog(
+                                                    $childAction,
+                                                    $childTag['name'],
+                                                    $values[$childTag['name']] ?? "",
+                                                    $childTag['log_mime'] ?? false
+                                                );
+                                            }
                                         }
                                     }
 
