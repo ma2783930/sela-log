@@ -7,14 +7,12 @@ use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Sela\Jobs\UpdateSelaLogFiles;
 use Sela\Traits\AttributeReader;
 use Sela\Traits\HasDatabaseLog;
 
 class SelaLogHandler
 {
-    use HasDatabaseLog;
-    use AttributeReader;
+    use HasDatabaseLog, AttributeReader;
 
     /**
      * Handle an incoming request.
@@ -100,8 +98,6 @@ class SelaLogHandler
                                     }
                                 }
                             });
-
-                        UpdateSelaLogFiles::dispatch();
                     });
                 }
             } catch (Exception $exception) {

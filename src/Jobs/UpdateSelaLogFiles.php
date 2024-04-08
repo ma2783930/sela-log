@@ -2,13 +2,13 @@
 
 namespace Sela\Jobs;
 
+use Exception;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\DB;
 use Sela\Models\ActionLog;
 use Sela\Models\DetailLog;
 use Sela\Models\MimeLog;
@@ -37,35 +37,37 @@ class UpdateSelaLogFiles implements ShouldQueue
      */
     public function handle(): void
     {
-        DB::transaction(function () {
-            $actions = tap(ActionLog::oldest('timestamp')->lockForUpdate()->get(), function (Collection $actions) {
-                $actions->groupBy('file_name')
-                    ->each(function (Collection $actions, $filePath) {
-                        $this->appendActionLogsToFile($actions, $filePath);
-                        $actions->each(function (ActionLog $action) {
-                            $action->details()
-                                ->orderBy('log_mime')
-                                ->get()
-                                ->groupBy('file_name')
-                                ->each(function (Collection $details, $filePath) {
-                                    $this->appendDetailLogsToFile($details, $filePath);
-                                });
-                            $action->mimes()
-                                ->get()
-                                ->groupBy('file_name')
-                                ->each(function (Collection $mimes, $filePath) {
-                                    $this->appendMimeLogsToFile($mimes, $filePath);
-                                });
-                        });
-                    });
-            });
+        try {
+            $actions = tap(
+                ActionLog::oldest('timestamp')->lockForUpdate()->take(1000)->get(),
+                function (Collection $actions) {
+                    $actions->groupBy('file_name')
+                        ->each(function (Collection $actions, $filePath) {
+                            $this->appendActionLogsToFile($actions, $filePath);
+                            $actions->each(function (ActionLog $action) {
+                                $action->details()
+                                    ->orderBy('log_mime')
+                                    ->get()
+                                    ->groupBy('file_name')
+                                    ->each(function (Collection $details, $filePath) {
+                                        $this->appendDetailLogsToFile($details, $filePath);
+                                    });
 
-            $actions->each(function (ActionLog $action) {
-                $action->details()->delete();
-                $action->mimes()->delete();
-                $action->delete();
-            });
-        });
+                                $action->mimes()
+                                    ->get()
+                                    ->groupBy('file_name')
+                                    ->each(function (Collection $mimes, $filePath) {
+                                        $this->appendMimeLogsToFile($mimes, $filePath);
+                                    });
+                            });
+                        });
+                }
+            );
+
+            ActionLog::whereIn('id', $actions->pluck('id')->toArray())->delete();
+        } catch (Exception $e) {
+            //
+        }
     }
 
     /**

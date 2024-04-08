@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Sela\Models\ActionLog;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\File\File;
 
 trait HasDatabaseLog
 {
@@ -36,18 +37,11 @@ trait HasDatabaseLog
     public function insertDetailLog(ActionLog $action, $tag, $value, bool $logMime = false): void
     {
         if (!$logMime) {
-
-            /*
-            |--------------------------------------------------------------------------
-            | Save detail log as normal data tag
-            |--------------------------------------------------------------------------
-            */
-
+            //save detail log as normal data tag
             $action->details()->create([
                 'data_tag' => $tag,
                 'value' => $value ?? ''
             ]);
-
         } else {
 
             $dateFormat = verta()->format(config('sela.path_date_format', 'Y_m_d'));
@@ -56,54 +50,35 @@ trait HasDatabaseLog
             try {
 
                 if ($value instanceof UploadedFile) {
-
                     $fileName = sprintf('%s.%s', Str::uuid(), $value->guessExtension());
                     $mimeType = $value->getMimeType();
                     Storage::disk('sela')->put("{$directoryPath}/{$fileName}", $value->getContent());
-
                 } else {
-
-                    $file = base64_to_file($value);
+                    $file = $this->base64_to_file($value);
                     $fileName = sprintf('%s.%s', Str::uuid(), $file->extension());
                     $mimeType = $file->getMimeType();
                     Storage::disk('sela')->put("{$directoryPath}/{$fileName}", $file->getContent());
-
                 }
 
                 $logValue = sprintf('%s/%s', $directoryPath, $fileName);
 
-                /*
-                |--------------------------------------------------------------------------
-                | Save detail log as normal data tag
-                |--------------------------------------------------------------------------
-                */
-
+                //save detail log as normal data tag
                 $action->details()->create([
                     'data_tag' => $tag,
                     'value' => $logValue,
                     'log_mime' => true
                 ]);
 
-                /*
-                |--------------------------------------------------------------------------
-                | Save detail log as mime data tag
-                |--------------------------------------------------------------------------
-                */
-
+                //save detail log as mime data tag
                 $action->mimes()->create([
                     'data_tag' => $tag,
                     'value' => $logValue,
                     'mime' => $mimeType
                 ]);
-
             } catch (Exception $e) {
 
-                /*
-                |--------------------------------------------------------------------------
-                | Save invalid file data as normal and mime data tag
-                |--------------------------------------------------------------------------
-                */
-
+                //save invalid file data as normal and mime data tag
+                
                 $fileName = time() . '.' . '.tmp';
                 Storage::disk('sela')->put("{$directoryPath}/{$fileName}}", $value);
 
@@ -119,9 +94,40 @@ trait HasDatabaseLog
                     'data_tag' => $tag,
                     'value' => $path
                 ]);
-
             }
-
         }
+    }
+
+    /**
+     * @param string $value
+     * @return UploadedFile
+     */
+    public function base64_to_file(string $value): UploadedFile
+    {
+        if (str_contains($value, ';base64')) {
+            [, $value] = explode(';', $value);
+            [, $value] = explode(',', $value);
+        }
+
+        $binaryData = base64_decode($value);
+        $tmpFile = tmpfile();
+        $tmpFilePath = stream_get_meta_data($tmpFile)['uri'];
+
+        file_put_contents($tmpFilePath, $binaryData);
+
+        $tmpFileObject = new File($tmpFilePath);
+        $file = new UploadedFile(
+            $tmpFileObject->getPathname(),
+            $tmpFileObject->getFilename(),
+            $tmpFileObject->getMimeType(),
+            0,
+            true
+        );
+
+        app()->terminating(function () use ($tmpFile) {
+            fclose($tmpFile);
+        });
+
+        return $file;
     }
 }
