@@ -2,7 +2,7 @@
 
 namespace Sela\Traits;
 
-use Str;
+use Illuminate\Support\Str;
 
 trait HasUuid
 {
@@ -15,7 +15,6 @@ trait HasUuid
     public static function bootHasUuid()
     {
         static::saving(function ($instance) {
-            /** @var $instance self */
             $instance->id = Str::uuid();
         });
     }

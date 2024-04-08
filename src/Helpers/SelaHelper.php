@@ -10,11 +10,10 @@ use Sela\Traits\HasDatabaseLog;
 
 class SelaHelper
 {
-    use HasDatabaseLog;
-    use AttributeReader;
+    use HasDatabaseLog, AttributeReader;
 
     /**
-     * @return array[]
+     * @return array
      */
     public function getPaginationDataTags(): array
     {
@@ -29,7 +28,7 @@ class SelaHelper
 
     /**
      * @param \Illuminate\Http\Request $request
-     * @param array                    $values
+     * @param array $values
      * @return void
      */
     public function insertLog(Request $request, array $values): void

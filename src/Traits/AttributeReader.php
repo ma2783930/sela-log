@@ -21,10 +21,10 @@ trait AttributeReader
             return null;
         }
 
-        $method     = $request->route()->getActionMethod();
+        $method = $request->route()->getActionMethod();
         $reflection = new ReflectionClass(get_class($controller));
-        $method     = $reflection->getMethod($method);
-        $attribute  = $method->getAttributes(SelaProcess::class);
+        $method = $reflection->getMethod($method);
+        $attribute = $method->getAttributes(SelaProcess::class);
 
         if (!empty($attribute)) {
             return $attribute[0]->newInstance();

@@ -5,8 +5,9 @@ namespace Sela\Models;
 use Illuminate\Database\Eloquent\Model;
 
 class BaseModel extends Model
-{
-    public    $timestamps   = false;
-    protected $guarded      = [];
-    protected $casts        = [];
+{    
+    protected $guarded = [];
+    protected $casts = [];
+
+    public $timestamps = false;
 }

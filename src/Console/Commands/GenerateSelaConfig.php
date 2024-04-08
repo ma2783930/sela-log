@@ -48,17 +48,17 @@ class GenerateSelaConfig extends Command
     {
         $config = [
             'application' => [
-                'name'    => config('app.name'),
+                'name' => config('app.name'),
                 'version' => config('app.version')
             ],
-            'processes'   => []
+            'processes' => []
         ];
 
         foreach ($this->directories as $rootNamespace => $dir) {
             $files = (new Finder())->files()
-                                   ->name('*.php')
-                                   ->in($dir)
-                                   ->sortByName();
+                ->name('*.php')
+                ->in($dir)
+                ->sortByName();
 
             collect($files)->each(function (SplFileInfo $file) use (&$config, $rootNamespace) {
                 $className = $this->fullQualifiedClassNameFromFile($file, $rootNamespace);
@@ -69,19 +69,20 @@ class GenerateSelaConfig extends Command
                         $processNameAttribute = $method->getAttributes(SelaProcess::class);
                         if (!empty($processNameAttribute)) {
                             /** @var $class SelaProcess */
-                            $class                                     = $processNameAttribute[0]->newInstance();
+                            $class = $processNameAttribute[0]->newInstance();
                             $config['processes'][$class->process_name] = [
-                                'name'      => $class->process_name,
-                                'info'      => $class->info,
+                                'name' => $class->process_name,
+                                'info' => $class->info,
                                 'data_tags' => collect($class->data_tags)
-                                    ->filter(fn($tag) => !isset($tag['data_tags']))
+                                    ->filter(fn ($tag) => !isset($tag['data_tags']))
                                     ->values()
                                     ->map(function ($tag) {
                                         $data = [
                                             'RType' => 'L',
-                                            'name'  => $tag['name'],
-                                            'info'  => $tag['info']
+                                            'name' => $tag['name'],
+                                            'info' => $tag['info']
                                         ];
+                                        
                                         if (isset($tag['log_mime']) && $tag['log_mime']) {
                                             $data['log_mime'] = true;
                                         }
@@ -92,17 +93,17 @@ class GenerateSelaConfig extends Command
                             ];
 
                             collect($class->data_tags)
-                                ->filter(fn($tag) => isset($tag['data_tags']))
+                                ->filter(fn ($tag) => isset($tag['data_tags']))
                                 ->values()
                                 ->each(function ($tag) use (&$config) {
                                     $config['processes'][$tag['process_name']] = [
-                                        'name'      => $tag['process_name'],
-                                        'info'      => $tag['info'],
+                                        'name' => $tag['process_name'],
+                                        'info' => $tag['info'],
                                         'data_tags' => collect($tag['data_tags'])->map(function ($tag) {
                                             $data = [
                                                 'RType' => 'L',
-                                                'name'  => $tag['name'],
-                                                'info'  => $tag['info']
+                                                'name' => $tag['name'],
+                                                'info' => $tag['info']
                                             ];
 
                                             if (isset($tag['log_mime']) && $tag['log_mime']) {
@@ -132,7 +133,7 @@ class GenerateSelaConfig extends Command
         $this->line(Storage::disk('sela')->path($fileName));
         $this->line('=======================================================================================');
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     protected function fullQualifiedClassNameFromFile(SplFileInfo $file, string $rootNamespace): string

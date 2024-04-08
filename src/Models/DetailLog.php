@@ -8,14 +8,14 @@ use Sela\Traits\HasUuid;
 
 class DetailLog extends BaseModel
 {
-    use HasISOTimestamp;
-    use HasFileName;
-    use HasUuid;
+    use HasISOTimestamp, HasFileName, HasUuid;
 
-    protected     $table            = 'sela_detail_logs';
-    protected     $casts            = [
+    protected $table = 'sela_detail_logs';
+    
+    protected $casts = [
         'log_mime' => 'boolean',
-        'value'    => 'json'
+        'value' => 'json'
     ];
-    public string $fileNameTemplate = 'detaillog_%.json';
+
+    protected $fileNameTemplate = 'detaillog_%.json';
 }

@@ -4,15 +4,14 @@ namespace Sela\Attributes;
 
 use Attribute;
 use Exception;
-use Arr;
 
 #[Attribute(Attribute::TARGET_METHOD)]
 class SelaProcess
 {
     public string $process_name;
     public string $info;
-    public array  $data_tags = [];
-    public bool   $auto_log;
+    public array $data_tags = [];
+    public bool $auto_log;
 
     /**
      * @param array $config
@@ -22,7 +21,7 @@ class SelaProcess
     {
         //$this->validateConfiguration($config);
         $data_tags = $config['data_tags'] ?? [];
-        if ($config['pagination'] ?? false) {
+        if (isset($config['pagination']) && $config['pagination']) {
             $data_tags = [
                 ...$data_tags,
                 ['name' => 'quick_filter', 'info' => 'Quick filter text'],
@@ -34,9 +33,9 @@ class SelaProcess
         }
 
         $this->process_name = $config['name'];
-        $this->info         = $config['info'];
-        $this->data_tags    = $data_tags;
-        $this->auto_log     = $config['auto_log'] ?? true;
+        $this->info = $config['info'];
+        $this->data_tags = $data_tags;
+        $this->auto_log = $config['auto_log'] ?? true;
     }
 
     /**
@@ -81,7 +80,6 @@ class SelaProcess
             if (isset($tag['log_mime']) && !is_bool($tag['log_mime'])) {
                 throw new Exception('log_mime key type must be boolean.');
             }
-
         }
     }
 }

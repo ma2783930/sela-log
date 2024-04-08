@@ -15,7 +15,8 @@ class SelaLogServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->bind('sela', fn() => new SelaHelper);
+        $this->app->bind('sela', fn () => new SelaHelper);
+
         $this->commands([GenerateSelaConfig::class]);
         $this->mergeConfigFrom(__DIR__ . '/../../config/sela.php', 'sela');
         $this->publishes([
@@ -30,19 +31,12 @@ class SelaLogServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $useStorage                             = config('sela.use_storage');
-        $path                                   = config('sela.path');
-        $loadMigrations                         = config('sela.load_migrations', false);
-        if ($loadMigrations) {
-            $this->publishes([
-                __DIR__ . '/../../database/migrations' => database_path('migrations'),
-            ], 'sela');
-            $this->loadMigrationsFrom(__DIR__ . '/../../database/migrations');
-        }
+        $useStorage = config('sela.use_storage');
+        $path = config('sela.path');
 
         app()->config['filesystems.disks.sela'] = [
             'driver' => 'local',
-            'root'   => $useStorage ? storage_path($path) : $path
+            'root' => $useStorage ? storage_path($path) : $path
         ];
     }
 }

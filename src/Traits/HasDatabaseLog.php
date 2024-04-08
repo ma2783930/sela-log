@@ -6,13 +6,13 @@ use Exception;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Sela\Models\ActionLog;
-use Storage;
-use Str;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 trait HasDatabaseLog
 {
     /**
-     * @param string      $processName
+     * @param string $processName
      * @param string|null $parentProc
      * @return \Sela\Models\ActionLog
      * @noinspection PhpUndefinedFieldInspection
@@ -22,15 +22,15 @@ trait HasDatabaseLog
         return ActionLog::forceCreate([
             'parent_proc' => $parentProc,
             'process_tag' => $processName,
-            'user_name'   => Auth::user() ? Auth::user()->username : 'guest',
+            'user_name' => Auth::user() ? Auth::user()->username : 'guest',
         ]);
     }
 
     /**
-     * @param \Sela\Models\ActionLog   $action
-     * @param                          $tag
-     * @param                          $value
-     * @param bool                     $logMime
+     * @param \Sela\Models\ActionLog $action
+     * @param $tag
+     * @param $value
+     * @param bool $logMime
      * @return void
      */
     public function insertDetailLog(ActionLog $action, $tag, $value, bool $logMime = false): void
@@ -45,12 +45,12 @@ trait HasDatabaseLog
 
             $action->details()->create([
                 'data_tag' => $tag,
-                'value'    => $value ?? ""
+                'value' => $value ?? ''
             ]);
 
         } else {
 
-            $dateFormat    = verta()->format(config('sela.path_date_format', 'Y_m_d'));
+            $dateFormat = verta()->format(config('sela.path_date_format', 'Y_m_d'));
             $directoryPath = './files/' . $dateFormat;
 
             try {
@@ -63,7 +63,7 @@ trait HasDatabaseLog
 
                 } else {
 
-                    $file     = base64_to_file($value);
+                    $file = base64_to_file($value);
                     $fileName = sprintf('%s.%s', Str::uuid(), $file->extension());
                     $mimeType = $file->getMimeType();
                     Storage::disk('sela')->put("{$directoryPath}/{$fileName}", $file->getContent());
@@ -80,7 +80,7 @@ trait HasDatabaseLog
 
                 $action->details()->create([
                     'data_tag' => $tag,
-                    'value'    => $logValue,
+                    'value' => $logValue,
                     'log_mime' => true
                 ]);
 
@@ -92,11 +92,11 @@ trait HasDatabaseLog
 
                 $action->mimes()->create([
                     'data_tag' => $tag,
-                    'value'    => $logValue,
-                    'mime'     => $mimeType
+                    'value' => $logValue,
+                    'mime' => $mimeType
                 ]);
 
-            } catch (Exception $exception) {
+            } catch (Exception $e) {
 
                 /*
                 |--------------------------------------------------------------------------
@@ -111,13 +111,13 @@ trait HasDatabaseLog
 
                 $action->details()->create([
                     'data_tag' => $tag,
-                    'value'    => $path,
+                    'value' => $path,
                     'log_mime' => true
                 ]);
 
                 $action->mimes()->create([
                     'data_tag' => $tag,
-                    'value'    => $path
+                    'value' => $path
                 ]);
 
             }

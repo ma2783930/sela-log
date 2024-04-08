@@ -9,18 +9,11 @@ use Sela\Traits\HasUuid;
 
 class ActionLog extends BaseModel
 {
-    use HasISOTimestamp;
-    use HasFileName;
-    use HasUuid;
+    use HasISOTimestamp, HasFileName, HasUuid;
 
-    protected $table        = 'sela_action_logs';
-    public string $fileNameTemplate = 'actionlog_%.json';
+    protected $table = 'sela_action_logs';
 
-    /*
-    |--------------------------------------------------------------------------
-    | Relationships
-    |--------------------------------------------------------------------------
-    */
+    protected $fileNameTemplate = 'actionlog_%.json';
 
     public function details(): HasMany
     {
