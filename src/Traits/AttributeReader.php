@@ -15,14 +15,16 @@ trait AttributeReader
      */
     public function getProcessAttribute(Request $request): ?SelaProcess
     {
-        $controller = $request->route()?->controller;
+        $action = $request->route()?->action;
+        $routeController = $action['controller'] ?? null;        
 
-        if (empty($controller)) {
+        if (empty($routeController)) {
             return null;
         }
 
-        $method = $request->route()->getActionMethod();
-        $reflection = new ReflectionClass(get_class($controller));
+        list($controller, $method) = explode('@', $routeController);
+
+        $reflection = new ReflectionClass($controller);
         $method = $reflection->getMethod($method);
         $attribute = $method->getAttributes(SelaProcess::class);
 
